@@ -1,0 +1,48 @@
+# MACROSYNTH callees for the eight-heavy and eight-mixed projects.
+# Append this fragment to functions.txt when generating a combined library.
+# These entries are native callees; this fragment adds no Unicorn hooks.
+0x0001991c 0x00019bde # voice block renderer and post-filter
+0x00019740 0x00019812 # scalar multimode filter
+0x00019830 0x00019900 # scalar nonlinear filter; hot entry in eight-heavy
+0x00019bf0 0x00019bf4 # voice status callback returning zero
+0x00019bf4 0x00019bf8 # voice status callback returning one
+0x0003d528 0x0003d52c # immutable PC-load veneer to 0x60017d9c
+0x60017d9c 0x600184e2 # prepare and render one MACROSYNTH sub-block
+0x00018b94 0x00018ea2 # apply a MACROSYNTH modulator
+0x000189c4 0x000189ec # dispatch the MACROSYNTH model table
+0x000188f8 0x00018942 # prepare the digital model and dispatch it
+0x0001870c 0x0001883e # dispatch the digital model table
+0x00018684 0x000186c0 # interpolate the oscillator increment table
+0x000186c4 0x00018706 # interpolate the oscillator delay table
+0x000188aa 0x000188f8 # prepare and scale the analog model
+0x000180d0 0x000181b0 # dispatch the analog model table
+# Model targets read from the retained firmware-initialized RAM tables:
+# 0x2000b034 (wrapper), 0x2000b204 (digital), 0x2000b1bc (analog).
+0x60015a48 0x60015c44 # digital core for MACROSYNTH shape 14
+0x60013b20 0x60013ce8 # digital core for MACROSYNTH shape 24
+0x60015f3c 0x6001600c # digital core for MACROSYNTH shape 25
+0x60014034 0x600145e8 # digital core for MACROSYNTH shape 39
+0x60014848 0x600149d0 # digital core for MACROSYNTH shape 34
+0x600154d4 0x600156f4 # digital core for MACROSYNTH shape 36
+0x600136a4 0x60013726 # additional analog table slot 4 core; no captured fixture visits
+0x60012ee0 0x60013132 # confirmed CSAW core; wrapper 0x188aa selects analog model 2
+# Small original integer DSP primitives used by the selected digital cores.
+0x000181c0 0x000181fc # advance a percussion envelope
+0x000181fc 0x0001821a # update a percussion impulse state
+0x0001821c 0x00018230 # set a percussion envelope trigger
+0x00018230 0x0001831a # process the integer resonator
+0x00018324 0x00018334 # interpolate a waveshaper table
+0x00018340 0x00018352 # interpolate a percussion noise table
+# Flash veneers preserve the original direct-call targets.
+0x6005fdd0 0x6005fdd4 # veneer to powf at 0x37ab8
+0x6005fe28 0x6005fe2c # veneer to logf at 0x37634
+0x6005ff20 0x6005ff24 # veneer to modulator application at 0x18b94
+0x600600f0 0x600600f4 # veneer to frequency interpolation at 0x10534
+0x60060280 0x60060284 # veneer to model dispatch at 0x189c4
+0x600604d0 0x600604d4 # veneer to waveshaper interpolation at 0x18324
+0x60060798 0x6006079c # veneer to oscillator increment interpolation at 0x18684
+0x6005fff8 0x6005fffc # veneer to envelope trigger at 0x1821c
+0x60060088 0x6006008c # veneer to resonator processing at 0x18230
+0x60060478 0x6006047c # veneer to percussion envelope at 0x181c0
+0x60060500 0x60060504 # veneer to percussion impulse at 0x181fc
+0x60060538 0x6006053c # veneer to percussion noise interpolation at 0x18340

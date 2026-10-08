@@ -1,0 +1,126 @@
+# Function entry and exclusive instruction bound for Headless 6.5.2C.
+# Bounds protect CFG discovery; they do not imply that every byte is code.
+# These are candidates. Validation determines which entries can be enabled.
+# Entry order starts with the smallest useful DSP check and the hot stereo filter.
+0x00036da0 0x00036e0c # gain buffer
+0x000068b8 0x000070fa # stereo biquad cascade; TBB at 0x69dc
+0x000067b8 0x000068b8 # mono biquad helper
+0x000070fc 0x0000723c # mono biquad cascade
+0x0000bd28 0x0000c4e8 # sample interpolation
+0x0000c4f0 0x0000cafe # sample DSP variant; cold in supplied profiles
+0x0000cb04 0x0000d844 # sample DSP; largest measured hot function
+0x00020628 0x00020c70 # oscillator DSP; indirect calls are exit boundaries
+0x0001f820 0x00020030 # oscillator setup and filter DSP
+0x0001f79c 0x0001f81a # filter helper with VSEL
+0x0002003c 0x00020622 # oscillator DSP variant
+0x0002542c 0x0002550a # audio dispatcher; MMIO before hot loop limits entry acceleration
+0x0000b5c4 0x0000b706 # sample read and fixed-point conversion
+0x0000b708 0x0000bd24 # sample DSP variant
+0x000073bc 0x000085be # envelope DSP
+0x000085c0 0x0000876c # envelope DSP variant
+0x0000876c 0x0000891c # envelope DSP variant
+0x0000a4bc 0x0000b140 # nonlinear DSP
+0x0000f564 0x0000f914 # DSP with frexp helper
+0x0000dc84 0x0000f4f2 # DSP called by 0xf4f4
+0x000340d8 0x000342d4 # timing calculation
+0x00021668 0x00021712 # PCM conversion and clipping
+0x000215dc 0x00021658 # PCM input conversion
+0x00036e0c 0x00036e98 # add buffers
+0x0002ae70 0x0002ae88 # take audio buffer
+0x0002ae88 0x0002aece # take or copy audio buffer
+0x0002ae28 0x0002ae6e # publish audio buffer
+0x0002ac10 0x0002ad82 # allocate audio buffer; MMIO at entry
+0x0002adbc 0x0002ae20 # release audio buffer; MMIO at entry
+0x000326d4 0x00032808 # memcpy
+0x0003ad10 0x0003adb4 # memset
+0x0003829c 0x000382ec # frexpf helper
+0x0003d250 0x0003d254 # immutable PC-load veneer to 0x6000c99c
+0x0003d258 0x0003d25c # immutable PC-load veneer to 0x6000c9a8
+0x6000c99c 0x6000c9a4 # signed byte load used at DSP entry
+0x6000c9a8 0x6000c9cc # copy optional buffers
+0x60060580 0x60060584 # immutable PC-load veneer to 0x326d4
+# Native callees close the render graph without separate Unicorn hooks.
+# The observed oscillator virtual callbacks are multiply/clamp and active-state
+# loads. Unknown callback targets still require an original-firmware exit.
+0x00001fa4 0x00001fba # oscillator multiply and clamp callback
+0x000024cc 0x000024d2 # modulator active-state getter
+0x00010534 0x00010586 # interpolated frequency table helper
+0x00021c58 0x00021cd0 # nonlinear table helper with frexpf
+0x00037634 0x000376f0 # logf with original double-precision polynomial
+0x000376fc 0x0003773e # fmodf wrapper and domain-error handling
+0x00037ab8 0x00037da8 # powf with original double-precision polynomial
+0x00038400 0x0003851c # integer mantissa reduction for fmodf
+0x0003b538 0x0003b53e # current thread errno pointer
+0x0003819c 0x000381b4 # publish math error
+0x000381b4 0x000381d2 # signed range error
+0x000381d4 0x000381dc # range error constant
+0x000381e0 0x000381e8 # range error constant
+0x000381ec 0x000381f4 # range error constant
+0x000381f8 0x00038216 # divide-by-zero range error
+0x0003821c 0x0003823a # invalid-input domain error
+# Close the sample-recording call reached once per rendered sample. The
+# 64-bit conversion helpers preserve the original rounding and saturation.
+0x0000b4a8 0x0000b5ba # encode and publish one sample
+0x00038878 0x00038900 # rounded float-to-signed-64 conversion
+0x00039c74 0x00039c9c # signed float-to-64 exceptional conversion
+0x00039cd0 0x00039cfe # unsigned float-to-64 exceptional conversion
+# The timing helper shares the original integer normalization tail.
+0x0003994c 0x000399b6 # unsigned-64 to double conversion
+0x00039732 0x0003989a # normalize and round an integer double mantissa
+# The alternate sample callback calls a flash renderer through this veneer.
+# Its three flash veneers tail-call the existing fmodf, filter and memset code.
+0x0003d590 0x0003d594 # immutable PC-load veneer to 0x6000fd94
+0x6000fd94 0x600102ea # sample envelope and filter render helper
+0x6005fc60 0x6005fc64 # immutable PC-load veneer to 0x376fc
+0x60060168 0x6006016c # immutable PC-load veneer to 0x68b8
+0x60060198 0x6006019c # immutable PC-load veneer to 0x3ad10
+# Dispatcher and modulator callees can finish their common inactive branches.
+# Larger sequencing and unknown virtual targets still exit to original code.
+0x000251c0 0x00025416 # update pending sequencer rows
+0x000242c0 0x000242ec # dispatch song timing state
+0x00024c68 0x00024cbe # advance eight voice clocks
+0x00024b90 0x00024c64 # update one voice clock
+0x00023bc6 0x00023bcc # sequencer field address
+0x00023c18 0x00023c22 # sequencer track field address
+0x00023c22 0x00023c2c # sequencer state field address
+0x000249c4 0x000249e6 # pending voice-control predicate
+0x000230d2 0x000230d4 # empty callback
+0x000234a8 0x000234e8 # dispatch MIDI control state
+0x00035214 0x00035220 # MIDI callback gate
+0x0001f494 0x0001f772 # apply an active oscillator modulator
+0x000024c0 0x000024c4 # modulator object getter
+0x000024c8 0x000024cc # modulator kind getter
+0x00002530 0x0000255a # modulator amount getter
+0x00002564 0x00002592 # modulator scale getter
+0x00002594 0x00002598 # modulator destination getter
+0x000032a8 0x00003a2c # advance modulator envelope
+# Audio graph callbacks left in TCG by the first DSP selection.
+0x00008928 0x00008ab8 # stereo level and gain callback; hot loop at 0x89f8
+0x00008ab8 0x00008c86 # stereo mixing callback
+0x00008c88 0x0000905a # stereo mix and peak callback; hot loop at 0x8eb6
+0x0000905c 0x000095ae # stereo gain and mix callback; hot loop at 0x955e
+0x000095b0 0x00009d10 # stereo gain-transition callback
+0x00009d14 0x00009dd2 # interleave stereo capture buffers; loop at 0x9d7c
+0x0000a070 0x0000a1a0 # advance the double-precision audio clock
+0x0000a1b4 0x0000a476 # stereo auxiliary callback
+0x0002506a 0x000250c4 # apply pending audio-clock voice commands
+0x0003d3d0 0x0003d3d4 # immutable PC-load veneer to 0x6000c9d4
+0x6000c9d4 0x6000c9d8 # gain-transition buffer pointer getter
+# AudioStream list owner. The runtime must qualify its DWT RAM reads before
+# enabling this entry; DSB at 0x316ce remains an original-code exit boundary.
+0x00031680 0x000316d4 # dispatch active AudioStream callbacks and track timing
+# Forwarding callbacks in the captured 96-node AudioStream list.
+0x00000128 0x000001a8 # route stereo buffers to two or four outputs
+0x000072b0 0x000073ba # merge two stereo input pairs
+0x0000f4f4 0x0000f562 # stereo wrapper around the nonlinear DSP body
+# Voice callees of the AudioStream dispatcher. These entries have no new hooks.
+0x00004968 0x00005056 # dispatch one voice through its oscillator and sample graph
+0x00004400 0x00004446 # advance the modulator timeout
+0x00006204 0x00006218 # obtain one of eight voice objects
+0x00006580 0x00006716 # route and scale stereo voice buffers
+0x0000723c 0x000072b0 # apply the stereo biquad callback
+0x00036b6c 0x00036d02 # process the original four-sample biquad loop
+0x0003d328 0x0003d32c # immutable PC-load veneer to 0x6000be8c
+0x6000be8c 0x6000bebc # set the active flag in four voice graph objects
+0x0001f46c 0x0001f470 # oscillator callback reports available output
+0x0001f470 0x0001f474 # oscillator callback reports a complete output block

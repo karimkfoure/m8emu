@@ -1,0 +1,9 @@
+*.o
+*.so
+/m8rt
+/test_core
+/test_usb
+/test_usb_services
+test_watchdog
+test_nor
+.unicorn-library

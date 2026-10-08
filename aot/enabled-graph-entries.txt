@@ -1,0 +1,12 @@
+# Explicit graph candidate: nine roots/continuations instead of 170 hooks.
+# Native direct calls still cover every catalog function. Omitted hooks leave
+# execution in Unicorn until the next selected entry; semantics stay original.
+0x2542c
+0x2545a
+0x340d8
+0x21668
+0x31680
+0x3169a
+0x20628
+0xcb04
+0x68b8

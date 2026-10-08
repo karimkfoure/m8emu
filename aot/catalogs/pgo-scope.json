@@ -1,0 +1,177 @@
+{
+  "schema": "m8-native-pgo-scope/1",
+  "firmware_sha256": "20498b7637cee17baae249372db3b8377afd4e12a5e7062754c2ddd83621367f",
+  "original_source_sha256": "a473199818c67b70757932f2e060db3418d62da7c9410998a404fcd64b62f052",
+  "scoped_source_sha256": "24bde8db9f7148493ac8ccdefcd2324f02e806218473c821ff0b5058a5b87e0f",
+  "attribute": "no_profile_instrument_function",
+  "attribute_insertions": 82,
+  "omitted_bodies": [
+    {
+      "function": "region_7_impl",
+      "pcs": 344
+    },
+    {
+      "function": "region_8_impl",
+      "pcs": 318
+    },
+    {
+      "function": "region_a_impl",
+      "pcs": 78
+    },
+    {
+      "function": "region_c_impl",
+      "pcs": 5
+    },
+    {
+      "function": "region_60001_impl",
+      "pcs": 156
+    },
+    {
+      "function": "region_60004_impl",
+      "pcs": 8
+    },
+    {
+      "function": "region_60007_impl",
+      "pcs": 1248
+    },
+    {
+      "function": "region_60008_impl",
+      "pcs": 1309
+    },
+    {
+      "function": "region_60009_impl",
+      "pcs": 1375
+    },
+    {
+      "function": "region_6000a_impl",
+      "pcs": 1320
+    },
+    {
+      "function": "region_6000f_impl",
+      "pcs": 321
+    },
+    {
+      "function": "region_60020_impl",
+      "pcs": 188
+    },
+    {
+      "function": "region_60021_impl",
+      "pcs": 685
+    },
+    {
+      "function": "region_60022_impl",
+      "pcs": 560
+    },
+    {
+      "function": "region_60024_impl",
+      "pcs": 74
+    },
+    {
+      "function": "region_60027_impl",
+      "pcs": 588
+    },
+    {
+      "function": "region_60028_impl",
+      "pcs": 541
+    },
+    {
+      "function": "region_60029_impl",
+      "pcs": 314
+    },
+    {
+      "function": "region_6002a_impl",
+      "pcs": 703
+    },
+    {
+      "function": "region_6002b_impl",
+      "pcs": 253
+    },
+    {
+      "function": "region_6002c_impl",
+      "pcs": 209
+    },
+    {
+      "function": "region_6002f_impl",
+      "pcs": 856
+    },
+    {
+      "function": "region_60030_impl",
+      "pcs": 394
+    },
+    {
+      "function": "region_60031_impl",
+      "pcs": 208
+    },
+    {
+      "function": "region_60032_impl",
+      "pcs": 476
+    },
+    {
+      "function": "region_60033_impl",
+      "pcs": 814
+    },
+    {
+      "function": "region_60035_impl",
+      "pcs": 626
+    },
+    {
+      "function": "region_60036_impl",
+      "pcs": 734
+    },
+    {
+      "function": "region_60037_impl",
+      "pcs": 10
+    },
+    {
+      "function": "region_60042_impl",
+      "pcs": 55
+    },
+    {
+      "function": "region_60043_impl",
+      "pcs": 440
+    },
+    {
+      "function": "region_60047_impl",
+      "pcs": 186
+    },
+    {
+      "function": "region_60048_impl",
+      "pcs": 134
+    },
+    {
+      "function": "region_6004c_impl",
+      "pcs": 381
+    },
+    {
+      "function": "region_6004d_impl",
+      "pcs": 542
+    },
+    {
+      "function": "region_6004e_impl",
+      "pcs": 290
+    },
+    {
+      "function": "region_6004f_impl",
+      "pcs": 16
+    },
+    {
+      "function": "region_60052_impl",
+      "pcs": 110
+    },
+    {
+      "function": "region_60058_impl",
+      "pcs": 265
+    },
+    {
+      "function": "region_60059_impl",
+      "pcs": 242
+    },
+    {
+      "function": "region_6005c_impl",
+      "pcs": 216
+    }
+  ],
+  "omitted_body_count": 41,
+  "omitted_pcs": 17592,
+  "profiled_body_count": 58
+}

@@ -1,0 +1,94 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "native-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON",
+        "M8_BUILD_AOT": "ON",
+        "M8_BUILD_AOT_COUNTERS": "OFF",
+        "M8_NATIVE_ENGINE": "ON",
+        "M8_NATIVE_REGIONS": "ON",
+        "M8_NATIVE_AOT_CODE_GUARD": "ON",
+        "M8_AOT_CODEGEN_V2": "ON",
+        "M8_NATIVE_CORPUS_CATALOG": "ON",
+        "M8_NATIVE_TLS_INITIAL_EXEC": "ON",
+        "M8_NATIVE_REGION_INTEGER_FP_FASTPATH": "ON",
+        "M8_NATIVE_REGION_INLINE_MEMORY": "ON",
+        "M8_NATIVE_REGION_SERVICE_CONTINUE": "ON",
+        "M8_NATIVE_REGION_CHAIN": "ON",
+        "M8_NATIVE_REGION_EVENT_LOOP": "ON",
+        "M8_NATIVE_REGION_INLINE_SERVICES": "ON",
+        "M8_NATIVE_REGION_RAM_EXCLUSIVES": "ON",
+        "M8_NATIVE_REGION_COMPUTED_REDIRECTS": "ON",
+        "M8_NATIVE_REGION_SHARED_STATE": "ON",
+        "M8_NATIVE_APP_DEFAULT": "ON",
+        "M8_RT_CALLBACK_TIMING": "OFF",
+        "M8_BUILD_DESKTOP": "ON",
+        "M8_BUILD_BENCH": "OFF",
+        "BUILD_TESTING": "OFF",
+        "CMAKE_BUILD_TYPE": "Release",
+        "M8_PGO_JOBS": "2",
+        "M8_PGO_TRAIN_JOBS": "1",
+        "M8_NATIVE_PGO_SCOPED": "ON",
+        "M8_PORTABLE_BUNDLE": "ON"
+      }
+    },
+    {
+      "name": "linux",
+      "inherits": "native-base",
+      "displayName": "Linux with synthetic build-time PGO",
+      "cacheVariables": {
+        "M8_PGO": "AUTO",
+        "CMAKE_C_COMPILER": "gcc"
+      }
+    },
+    {
+      "name": "linux-dev",
+      "inherits": "native-base",
+      "displayName": "Linux without PGO",
+      "cacheVariables": {
+        "M8_PGO": "OFF"
+      }
+    },
+    {
+      "name": "handheld-arm64",
+      "inherits": "native-base",
+      "displayName": "Portable ARM64 with QEMU-trained PGO",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/handheld-arm64.cmake",
+      "cacheVariables": {
+        "M8_PGO": "AUTO",
+        "M8_QUALIFIED_PROFILE": "arm64-app",
+        "M8_PGO_TIMEOUT": "7200",
+        "M8_PGO_TRAIN_JOBS": "4",
+        "M8_NATIVE_DEVICE_FAST": "ON",
+        "M8_AOT_ARM64_FP_HARDWARE": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "linux",
+      "configurePreset": "linux",
+      "jobs": 2
+    },
+    {
+      "name": "linux-dev",
+      "configurePreset": "linux-dev",
+      "jobs": 2
+    },
+    {
+      "name": "handheld-arm64",
+      "configurePreset": "handheld-arm64",
+      "jobs": 2
+    }
+  ]
+}

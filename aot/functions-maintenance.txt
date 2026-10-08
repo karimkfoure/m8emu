@@ -1,0 +1,14 @@
+# Candidate waveform preview and sequencer maintenance callbacks.
+# Bounds contain reachable original instructions, not adjacent literal pools.
+# Keep DWT and NVIC accesses on the original slow path until the runtime
+# qualifies each access. Computed callbacks keep their original safe exits.
+0x000215bc 0x000215d6 # observed sequencer buffer-ready getter
+0x00021888 0x000218a0 # observed sequencer buffer-ready clear
+0x00021df0 0x00021e0e # waveform peak smoothing helper
+0x00034848 0x00034d9e # observed sequencer maintenance callback
+0x6001dbf8 0x6001deb0 # observed waveform preview renderer
+0x60049a30 0x60049a36 # waveform foreground colour getter
+0x60049ae4 0x60049aec # waveform background colour getter
+0x6004a188 0x6004a1ba # clipped display rectangle dispatcher
+0x6004ab34 0x6004abfa # display rectangle command writer
+0x60060768 0x6006076c # immutable veneer to peak smoothing helper

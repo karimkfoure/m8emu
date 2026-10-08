@@ -1,0 +1,19 @@
+# Candidate hook set for paired m8rt measurements. Use translate.py --hooks.
+# Inner filters, sample readers and oscillator helpers remain native callees.
+# Keep call continuations so MMIO and unknown callbacks can return to AOT.
+# The complete driver and PCM comparison must pass before this becomes default.
+0x36da0
+0xc4f0
+0xcb04
+0x20628
+0x2542c
+0xb708
+0x73bc
+0x85c0
+0x876c
+0xa4bc
+0xf564
+0xdc84
+0x340d8
+0x21668
+0x36e0c

@@ -1,0 +1,30 @@
+# Candidate SAMPLER voice closure for broader native playback coverage.
+# These entries add no hooks. Static decoded-PC coverage does not prove that
+# execution stays native through unknown computed calls or NVIC service.
+0x0001caa8 0x0001e20c # complete sampler renderer and PCM interpolation cases
+0x0001c414 0x0001ca88 # update the sampler oscillator and filter state
+0x0001b938 0x0001bc4e # maintain the sampler buffer window
+0x0001b4f4 0x0001b932 # apply the sampler loop-boundary and fade state
+0x0001abfc 0x0001afd0 # move the buffered sample window
+0x0001afd0 0x0001b3b6 # apply one sampler modulator
+0x0001abe0 0x0001abe4 # sampler reports available output
+0x0001abe4 0x0001abfc # sampler reports its current block mode
+# The original NVIC accesses at 0x1bc5c, 0x1bc76 and 0x1bc7a require the
+# cooperative service contract. Otherwise, return at the original access PC.
+0x0001bc58 0x0001c0e6 # compute the sampler buffer request and mask its IRQ
+0x00039bd4 0x00039c74 # signed 64-bit quotient and remainder wrapper
+0x00039d50 0x0003a018 # unsigned 64-bit division; UDF at 0x39e34 stays in Unicorn
+0x0003a018 0x0003a01a # original divide-by-zero handler return
+# The actual FM and MACROSYNTH vtables use these status methods.
+0x00011718 0x0001171c # FM reports available output
+0x0001171c 0x00011728 # FM reports its current block mode
+0x000189f0 0x000189fe # MACROSYNTH reports its current block mode
+0x00018a00 0x00018a04 # MACROSYNTH reports available output
+# Observed dynamic modulation/fold targets. Retain the same outer hooks.
+0x00002298 0x000022c2 # fold limiter callback reached with AMP 40 and limiter 02
+0x000029fc 0x00002dae # ADSR modulator callback and four guarded cases
+0x00002dd8 0x00003292 # LFO modulator callback and ten guarded waveform cases
+0x00036d04 0x00036d90 # LFO helper used by the original call at 0x3100
+0x00002598 0x000029f2 # TRIG modulator callback reached from the oscillator dispatcher
+0x00000f4c 0x00000f52 # TRIG callback's ordinary RAM state getter
+0x00023b50 0x00023b78 # finite sequencer wrapper; stop before unknown service callees

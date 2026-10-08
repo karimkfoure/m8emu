@@ -1,0 +1,52 @@
+# Remaining original MACROSYNTH methods from the initialized dispatch tables.
+# Model wrappers: 0x2000b034 (47 slots); analog: 0x2000b1bc (9 slots);
+# digital: 0x2000b204 (34 slots). Existing entries stay in functions-braids.txt.
+# These entries add no hooks. Unknown computed calls keep the original exits.
+# Each bound ends after the last reachable decoded original instruction.
+# Table membership identifies targets; it does not validate unplayed models.
+0x0001803c 0x000180ca # analog core slot 5
+0x00018360 0x000184f2 # digital core slot 31
+0x00018848 0x000188aa # immutable veneer target
+0x00018944 0x00018954 # immutable veneer target
+0x00018954 0x000189c2 # wrapper slot 15
+0x60013138 0x6001332e # analog core slot 3
+0x60013330 0x6001348e # analog core slot 0
+0x60013490 0x600136a4 # analog core slot 1
+0x60013728 0x60013848 # analog core slot 6
+0x6001384c 0x600139a8 # analog core slot 7
+0x600139b0 0x60013a7a # analog core slot 8
+0x60013a80 0x60013b1c # digital core slot 3
+0x60013cf8 0x60013e22 # digital core slot 24
+0x60013e2c 0x6001402a # digital core slot 25
+0x600145e8 0x6001482a # digital core slot 16
+0x600149dc 0x60014c94 # digital core slot 32
+0x60014ca0 0x60014dd6 # digital core slot 9
+0x60014dec 0x60014f44 # digital core slot 17
+0x60014f54 0x6001515e # digital core slot 18
+0x60015178 0x600152d2 # digital core slot 28
+0x600152e8 0x600154c4 # digital core slot 29
+0x600156fc 0x60015928 # digital core slot 15
+0x6001592c 0x60015a3a # digital core slot 0
+0x60015c5c 0x60015e26 # digital core slot 4, digital core slot 5, digital core slot 6, digital core slot 7
+0x60015e38 0x60015f30 # digital core slot 8
+0x60016010 0x6001610c # digital core slot 13
+0x60016114 0x600161f0 # digital core slot 14
+0x600161f4 0x60016350 # digital core slot 19
+0x60016368 0x600165ce # digital core slot 20
+0x600165f4 0x600169b2 # digital core slot 27
+0x600169c0 0x60016aac # digital core slot 30
+0x60016ab4 0x60016be8 # digital core slot 33; confirmed DIGITAL MOD shape 46
+0x60016bf8 0x60016d7c # digital core slot 22
+0x60016d88 0x60016e66 # digital core slot 2
+0x60016e70 0x60017064 # digital core slot 10
+0x60017074 0x600170e0 # wrapper slot 4
+0x600170e0 0x60017180 # wrapper slot 2
+0x60017180 0x6001724c # wrapper slot 5, wrapper slot 6
+0x6001724c 0x600172f4 # wrapper slot 7, wrapper slot 8
+0x600172f4 0x600173c6 # wrapper slot 3
+0x600173c6 0x60017536 # wrapper slot 1
+0x60017548 0x6001762e # wrapper slot 9, wrapper slot 10, wrapper slot 11, wrapper slot 12
+0x6005fc90 0x6005fc94 # static callee
+0x60060378 0x6006037c # static callee
+0x60060440 0x60060444 # static callee
+0x60060660 0x60060664 # static callee

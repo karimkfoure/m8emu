@@ -1,0 +1,193 @@
+{
+  "schema": "m8-native-region-layout/1",
+  "firmware_sha256": "20498b7637cee17baae249372db3b8377afd4e12a5e7062754c2ddd83621367f",
+  "groups": [
+    {
+      "pages": [
+        0,
+        5,
+        24,
+        32
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        1,
+        11
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        2,
+        20,
+        21,
+        25
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        3,
+        4
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        13,
+        55
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        15,
+        23,
+        30,
+        31
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        16,
+        18,
+        19
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        27,
+        28
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        33,
+        42,
+        51,
+        52
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        35,
+        36,
+        37,
+        38
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        45,
+        46
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        48,
+        49
+      ],
+      "has_fp": false
+    },
+    {
+      "pages": [
+        56,
+        57
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        393218,
+        393219
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        393227,
+        393228,
+        393241,
+        393262
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        393229,
+        393244,
+        393245,
+        393246
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        393232,
+        393233
+      ],
+      "has_fp": true
+    },
+    {
+      "pages": [
+        393243,
+        393285,
+        393286
+      ],
+      "has_fp": false
+    },
+    {
+      "pages": [
+        393284,
+        393289,
+        393290,
+        393312
+      ],
+      "has_fp": false
+    }
+  ],
+  "split_retained_groups": [
+    {
+      "pages": [
+        6,
+        50,
+        54,
+        61
+      ],
+      "reason": "FP class or instruction-position bound"
+    },
+    {
+      "pages": [
+        34,
+        43
+      ],
+      "reason": "FP class or instruction-position bound"
+    },
+    {
+      "pages": [
+        39,
+        41,
+        58
+      ],
+      "reason": "FP class or instruction-position bound"
+    },
+    {
+      "pages": [
+        393247,
+        393291,
+        393297,
+        393311
+      ],
+      "reason": "FP class or instruction-position bound"
+    }
+  ],
+  "method": "Retain compatible old groups. The existing generator leaves all other pages separate."
+}

@@ -1,0 +1,7 @@
+# Additional voice callees reached by the eight-mixed project.
+# Append this fragment to the combined function catalog. No new hooks.
+0x000168e8 0x0001776c # render the mixed-project chord voice; loops at 0x16a74/0x16c00
+0x00015da4 0x000168d2 # update the chord oscillator and filter state
+0x000154e8 0x000157f6 # apply one chord-voice modulator
+0x0001529c 0x000152a0 # chord voice reports available output
+0x000152a0 0x000152a4 # chord voice reports a complete output block

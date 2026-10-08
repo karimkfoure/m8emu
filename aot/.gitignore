@@ -1,0 +1,6 @@
+*.so
+*.o
+generated.c
+manifest.json
+captures/
+runs/

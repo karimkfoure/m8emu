@@ -1,0 +1,67 @@
+# Candidate native control and display paths from observed original callers.
+# Add this fragment as callees first. New hooks stay in separate candidates.
+# Device writes, clock reads, CPU-mask operations and barriers keep their
+# original safe exits. In particular, the clock at 0x320ac is not added.
+# MIDI event sender 0x1a088 had no visits in the unchanged MIDI fixture;
+# its calls remain original instruction barriers.
+0x00004960 0x00004964 # observed EXTERNAL block-mode status
+0x00004964 0x00004966 # observed empty voice callback
+0x0000a4b0 0x0000a4ba # immutable veneer target
+0x0000f970 0x0000f974 # observed EXTERNAL output status
+0x0000fa64 0x0000fd16 # static callee
+0x000101c4 0x0001039a # static callee
+0x000103b8 0x00010512 # static callee
+0x00010c44 0x00010ff6 # observed EXTERNAL parameter update
+0x00011018 0x00011488 # observed EXTERNAL buffer renderer
+0x0001a2fc 0x0001a380 # observed MIDI OUT modulation predicates
+0x0001a380 0x0001a3d0 # observed MIDI OUT buffer renderer
+0x00022e30 0x00022e36 # immutable veneer target
+0x00024944 0x0002494e # immutable veneer target
+0x00024dd0 0x00024e44 # observed sequencer scan
+0x00025510 0x00025522 # observed outer dispatcher and sequencer scan
+0x0002a59c 0x0002a5ea # sequencer track-position predicate
+0x0002b54c 0x0002b568 # observed text-colour setter
+0x00032bf8 0x00032c76 # original tail target
+0x00032d50 0x00032d80 # static callee
+0x00032d88 0x00032daa # static callee
+0x00033720 0x00033750 # static callee
+0x00033750 0x00033772 # static callee
+0x00033794 0x00033798 # static callee
+0x00035014 0x0003512a # static callee
+0x000352c8 0x00035384 # original tail target
+0x00035abc 0x00035c4e # static callee
+0x00035e9c 0x00035eb0 # static callee
+0x00035f44 0x00035f6c # immutable veneer target
+0x0003606c 0x00036128 # static callee
+0x0003d278 0x0003d27c # static callee
+0x0003d2c0 0x0003d2c4 # static callee
+0x0003d340 0x0003d344 # static callee
+0x0003d3c8 0x0003d3cc # static callee
+0x0003d3e8 0x0003d3ec # static callee
+0x0003d478 0x0003d47c # static callee
+0x0003d4a0 0x0003d4a4 # static callee
+0x0003d4c8 0x0003d4cc # static callee
+0x0003d510 0x0003d514 # static callee
+0x0003d598 0x0003d59c # static callee
+0x0003d5b8 0x0003d5bc # static callee
+0x6000b96c 0x6000b974 # immutable veneer target
+0x6000babc 0x6000bad8 # immutable veneer target
+0x6000bae0 0x6000bae8 # immutable veneer target
+0x6000baec 0x6000bb08 # immutable veneer target
+0x6000bb10 0x6000bb2c # immutable veneer target
+0x6000bb34 0x6000bb3c # immutable veneer target
+0x6000bb40 0x6000bb48 # immutable veneer target
+0x6000bb4c 0x6000bb50 # immutable veneer target
+0x6000bb54 0x6000bb5a # immutable veneer target
+0x6000bb60 0x6000bb66 # immutable veneer target
+0x6000bb80 0x6000bb88 # immutable veneer target
+0x60049d9c 0x60049e2e # observed text-buffer renderer
+0x6004a488 0x6004a5d8 # observed glyph renderer
+0x6004a5e8 0x6004a676 # observed virtual character writer
+0x6004aa10 0x6004ab06 # original tail target
+0x6004ac08 0x6004acb6 # original tail target
+0x6005fef8 0x6005fefc # static callee
+0x60060040 0x60060044 # static callee
+0x60060150 0x60060154 # original tail target
+0x600601c0 0x600601c4 # static callee
+0x600604c0 0x600604c4 # static callee

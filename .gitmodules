@@ -1,0 +1,10 @@
+[submodule "third_party/M8HeadlessFirmware"]
+	path = third_party/M8HeadlessFirmware
+	url = https://github.com/Dirtywave/M8HeadlessFirmware.git
+[submodule "third_party/unicorn"]
+	path = third_party/unicorn
+	url = https://github.com/karimkfoure/unicorn.git
+	branch = m8/2.1.4
+[submodule "third_party/m8c"]
+	path = third_party/m8c
+	url = https://github.com/laamaa/m8c.git

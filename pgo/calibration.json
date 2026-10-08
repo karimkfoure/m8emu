@@ -1,0 +1,214 @@
+{
+  "engine_projects": {
+    "FMSYNTH": 137,
+    "HYPERSYNTH": 44,
+    "MACROSYNTH": 143,
+    "SAMPLER": 65,
+    "WAVSYNTH": 99
+  },
+  "engines": {
+    "FMSYNTH": 970,
+    "HYPERSYNTH": 235,
+    "MACROSYNTH": 732,
+    "SAMPLER": 333,
+    "WAVSYNTH": 317
+  },
+  "filters": {
+    "instruments": 1801,
+    "projects": 194
+  },
+  "instrument_count": {
+    "mean": 12.74384236453202,
+    "quantiles": {
+      "0": 0,
+      "10": 4,
+      "100": 93,
+      "25": 7,
+      "50": 10,
+      "75": 17,
+      "90": 25
+    },
+    "scope": "Saved explicit reference closure across 203 projects; not simultaneous voices."
+  },
+  "limits": [
+    "Counts describe saved references, not executed DSP time.",
+    "SAMPLER appears in 65 projects; only 32 have nonzero resolved sample bytes. Training always supplies valid generated samples.",
+    "Calibration is not a measured PGO speed result.",
+    "Phrase FX density counts unique saved reachable phrases, not instruction-weighted execution. Generated controls are original; no real-project patterns are copied."
+  ],
+  "phrase_fx": {
+    "active_row_fx_count_histogram": {
+      "0": 61161,
+      "1": 27744,
+      "2": 3341,
+      "3": 980
+    },
+    "active_rows": 93226,
+    "fx_commands": 37366,
+    "fx_lane_counts": {
+      "0": 25125,
+      "1": 4639,
+      "2": 7602
+    },
+    "fx_slots_per_active_row": 0.4008109325724583,
+    "projects_with_active_rows": 201,
+    "reachable_rows": 241376,
+    "scope": "Unique phrases reachable from explicit saved Song and Chain references; active rows only, not instruction-weighted playback."
+  },
+  "projects": 203,
+  "resolved_sample_bytes": {
+    "positive_quantiles": {
+      "0": 8244,
+      "10": 50242,
+      "100": 42272362,
+      "25": 633678,
+      "50": 1874494,
+      "75": 7751518,
+      "90": 14935430,
+      "95": 16147479
+    },
+    "projects": 32
+  },
+  "schema": "m8emu-synthetic-calibration/1",
+  "scope": "Static explicit Song reference closure, not simultaneous voices or instruction-weighted playback. Aggregate counts only.",
+  "sends": {
+    "delay": {
+      "instruments": 760,
+      "projects": 177
+    },
+    "mfx": {
+      "instruments": 1254,
+      "projects": 190
+    },
+    "reverb": {
+      "instruments": 1498,
+      "projects": 197
+    }
+  },
+  "tempo_bpm": {
+    "histogram": {
+      "100.0": 4,
+      "101.01": 1,
+      "102.0": 2,
+      "105.0": 1,
+      "107.0": 1,
+      "110.0": 2,
+      "114.0": 2,
+      "115.0": 1,
+      "117.0": 1,
+      "120.0": 21,
+      "123.0": 3,
+      "125.0": 2,
+      "126.0": 1,
+      "127.0": 2,
+      "128.0": 3,
+      "130.0": 4,
+      "131.0": 1,
+      "132.0": 1,
+      "133.0": 1,
+      "135.0": 4,
+      "138.0": 1,
+      "140.0": 6,
+      "142.0": 1,
+      "145.0": 3,
+      "148.0": 1,
+      "150.0": 4,
+      "152.0": 2,
+      "160.0": 9,
+      "170.0": 1,
+      "174.0": 1,
+      "176.0": 2,
+      "180.0": 3,
+      "185.0": 1,
+      "186.0": 1,
+      "190.0": 2,
+      "194.0": 1,
+      "20.0": 1,
+      "200.0": 9,
+      "204.0": 1,
+      "210.0": 4,
+      "218.0": 1,
+      "220.0": 7,
+      "235.0": 1,
+      "236.0": 1,
+      "236.5": 2,
+      "240.0": 4,
+      "245.0": 2,
+      "246.0": 1,
+      "248.0": 1,
+      "250.0": 5,
+      "254.0": 2,
+      "256.0": 1,
+      "258.0": 1,
+      "260.0": 6,
+      "270.0": 2,
+      "280.0": 9,
+      "284.0": 1,
+      "288.0": 1,
+      "290.0": 2,
+      "295.0": 3,
+      "300.0": 3,
+      "310.0": 1,
+      "312.0": 2,
+      "320.0": 6,
+      "327.998": 2,
+      "340.0": 3,
+      "360.0": 2,
+      "46.0": 1,
+      "50.0": 1,
+      "66.0": 1,
+      "70.0": 1,
+      "75.0": 1,
+      "76.0": 1,
+      "80.0": 2,
+      "82.0": 2,
+      "84.0": 1,
+      "86.0": 1,
+      "90.0": 3,
+      "94.0": 1,
+      "95.0": 2,
+      "99.998": 1
+    },
+    "quantiles": {
+      "0": 20.0,
+      "10": 100.0,
+      "100": 360.0,
+      "25": 120.0,
+      "50": 160.0,
+      "75": 250.0,
+      "90": 295.0,
+      "95": 320.0
+    }
+  },
+  "track_count": {
+    "0": 1,
+    "1": 4,
+    "2": 1,
+    "3": 2,
+    "4": 5,
+    "5": 6,
+    "6": 8,
+    "7": 5,
+    "8": 171
+  },
+  "training_selection": {
+    "coverage_anchors": [
+      "idle-dry",
+      "simple",
+      "eight-heavy",
+      "eight-mixed"
+    ],
+    "engine_allocation": "Largest remainder across 306 representative instrument references, with deterministic one/two/three variants per track and three dense 24-instrument arrangements.",
+    "feature_allocation": "Match project presence and instrument fractions for filters and each send.",
+    "instrument_variants": "Match mean 12.75 versus corpus 12.7438; retain original engine, filter and send proportions. Variants share generated sampler assets.",
+    "phrase_controls": "Match 0.4008 FX commands per saved active phrase row. Place original filter, pitch, retrigger, repeat and engine controls only on existing notes; keep OFF rows unchanged. Four anchors remain byte-identical.",
+    "representative_projects": 24,
+    "sample_allocation": "Eight representative sampler projects provide all dependencies. Positive generated bytes span the resolved-sample quantiles; their project frequency follows sampler references, not the 32 resolved assets.",
+    "seconds_per_project": 2,
+    "seed": 19768,
+    "tempo_allocation": "24 evenly spaced empirical quantiles, including 20 and 360 BPM.",
+    "total_audio_seconds": 56,
+    "track_limit": "19/24 eight-track projects (79.2%) versus 171/203 (84.2%); retain one each of 1, 4, 5, 6 and 7 tracks instead of removing light controls.",
+    "unqualified": "Compare this recipe with corpus-trained code before adoption. Metadata agreement cannot prove the target within about 2%."
+  }
+}
