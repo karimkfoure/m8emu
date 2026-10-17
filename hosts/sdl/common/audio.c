@@ -1,6 +1,9 @@
 #include "audio.h"
 #include "audio_clock.h"
 #include "thread_policy.h"
+#ifdef __APPLE__
+#include "audio_coreaudio.h"
+#endif
 #include <SDL3/SDL.h>
 #include <stdatomic.h>
 #include <stdlib.h>
@@ -20,6 +23,9 @@ struct m8live_audio {
     _Atomic int simulation_stop;
     SDL_Thread *simulation_thread;
     SDL_AudioStream *stream;
+#ifdef __APPLE__
+    m8_coreaudio *hal;
+#endif
     char error[256], driver[64];
 };
 
@@ -88,6 +94,14 @@ static void SDLCALL callback(void *userdata, SDL_AudioStream *stream,
     }
 }
 
+#ifdef __APPLE__
+static void hal_render(void *context, void *pcm, size_t frames) {
+    m8live_audio *a = context;
+    m8live_consume(a, pcm, frames);
+    if (atomic_load_explicit(&a->muted, memory_order_relaxed)) memset(pcm, 0, frames * 4);
+}
+#endif
+
 static void SDLCALL input_callback(void *userdata, SDL_AudioStream *stream,
                                   int additional, int total) {
     (void)additional;
@@ -136,6 +150,19 @@ m8live_audio *m8live_create(uint32_t capacity, int sdl) {
     a->ring = malloc((size_t)capacity * 4);
     if (!a->ring) { free(a); return NULL; }
     atomic_store(&a->minimum, capacity);
+#ifdef __APPLE__
+    /* Core Audio's HAL unit is the default macOS consumer. Selecting an SDL
+     * audio driver explicitly keeps the portable SDL stream. */
+    if (sdl && !SDL_getenv("SDL_AUDIO_DRIVER")) {
+        const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES);
+        a->hal = m8_coreaudio_open(hal_render, a, hint ? (uint32_t)SDL_atoi(hint) : 0,
+                                   a->error, sizeof(a->error));
+        if (!a->hal) return a;
+        m8_coreaudio_format(a->hal, &a->device_frames, &a->device_rate, NULL);
+        SDL_strlcpy(a->driver, "coreaudio-hal", sizeof(a->driver));
+        return a;
+    }
+#endif
     if (sdl) {
         /* Without a node latency the PipeWire stream inherits the server
          * quantum (for example 1024 frames at 48 kHz), which exceeds the
@@ -205,6 +232,9 @@ const char *m8live_error(m8live_audio *a) { return a ? a->error : "audio allocat
 const char *m8live_driver(m8live_audio *a) { return a->driver; }
 int m8live_start(m8live_audio *a) {
     if (a->error[0]) return -1;
+#ifdef __APPLE__
+    if (a->hal) return m8_coreaudio_start(a->hal, a->error, sizeof(a->error));
+#endif
     if (a->stream && !SDL_ResumeAudioStreamDevice(a->stream)) {
         SDL_strlcpy(a->error, SDL_GetError(), sizeof(a->error));
         return -1;
@@ -222,6 +252,9 @@ int m8live_start(m8live_audio *a) {
 }
 void m8live_pause(m8live_audio *a) {
     if (a && a->stream) SDL_PauseAudioStreamDevice(a->stream);
+#ifdef __APPLE__
+    if (a) m8_coreaudio_stop(a->hal);
+#endif
     if (a && a->simulation_running) {
         atomic_store(&a->simulation_stop, 1);
         SDL_WaitThread(a->simulation_thread, NULL);
@@ -232,6 +265,9 @@ void m8live_pause(m8live_audio *a) {
 void m8live_destroy(m8live_audio *a) {
     if (!a) return;
     m8live_pause(a);
+#ifdef __APPLE__
+    m8_coreaudio_close(a->hal);
+#endif
     if (a->stream) {
         SDL_DestroyAudioStream(a->stream);
     }
@@ -304,6 +340,13 @@ uint64_t m8live_get(m8live_audio *a, unsigned field) {
         int frames = 0;
         if (a->stream && SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(a->stream), &device, &frames))
             return field == 10 ? (uint64_t)frames : (uint64_t)device.freq;
+#ifdef __APPLE__
+        uint32_t hal_frames, hal_rate;
+        if (a->hal) {
+            m8_coreaudio_format(a->hal, &hal_frames, &hal_rate, NULL);
+            return field == 10 ? hal_frames : hal_rate;
+        }
+#endif
         return field == 10 ? a->device_frames : a->device_rate;
     }
     case 12: return atomic_load(&a->max_request);
@@ -313,6 +356,15 @@ uint64_t m8live_get(m8live_audio *a, unsigned field) {
     case 16: return atomic_load(&a->peak);
     case 17: return atomic_load(&a->sum_squared);
     case 18: return atomic_load(&a->sample_count);
+    case 19: {
+#ifdef __APPLE__
+        double latency = 0;
+        if (a->hal) m8_coreaudio_format(a->hal, NULL, NULL, &latency);
+        return (uint64_t)(latency * 1000 + .5);
+#else
+        return 0;
+#endif
+    }
     default: return 0;
     }
 }

@@ -122,6 +122,10 @@ add_executable(m8emu main.c metrics.c profiling.c
   ${STORAGE}/card.c ${PLATFORM}/card_platform_posix.c ${COMMON}/demo.c ${COMMON}/session.c
   ${STORAGE}/media.c ${PLATFORM}/media_platform_posix.c ${COMMON}/render_platform.c ${COMMON}/host_probe.c)
 target_include_directories(m8emu PRIVATE ${COMMON} ${M8RT}/third_party ${PLATFORM})
+if(APPLE)
+  target_sources(m8emu PRIVATE ${COMMON}/audio_coreaudio.c)
+  target_link_libraries(m8emu PRIVATE "-framework AudioToolbox" "-framework CoreAudio")
+endif()
 target_compile_definitions(m8emu PRIVATE M8_NATIVE_APP_DEFAULT=$<BOOL:${M8_NATIVE_APP_DEFAULT}>
   M8_NATIVE_BOOT_DEFAULT=$<BOOL:${M8_NATIVE_BOOT_DEFAULT}>
   M8_NATIVE_DEADLINE_YIELD_DEFAULT=$<BOOL:${M8_NATIVE_DEADLINE_YIELD_DEFAULT}>
@@ -205,6 +209,10 @@ add_test(NAME native_app_policy COMMAND test_native_policy
 set_tests_properties(native_app_policy PROPERTIES TIMEOUT 30)
 add_executable(test_audio ${M8_HOST_TEST_DIR}/test_audio.c ${COMMON}/audio.c ${COMMON}/audio_clock_sdl.c
   ${PLATFORM}/thread_policy.c)
+if(APPLE)
+  target_sources(test_audio PRIVATE ${COMMON}/audio_coreaudio.c)
+  target_link_libraries(test_audio PRIVATE "-framework AudioToolbox" "-framework CoreAudio")
+endif()
 target_include_directories(test_audio PRIVATE ${COMMON})
 target_link_libraries(test_audio PRIVATE SDL3::SDL3)
 target_compile_options(test_audio PRIVATE $<$<NOT:$<C_COMPILER_ID:MSVC>>:-UNDEBUG>)

@@ -406,11 +406,12 @@ static void status(m8_session *s, const m8_worker_state *p, double cpu_base, dou
            m8live_get(s->audio, 6)*1000.0/44100, p->rows);
     printf("device_rate=%" PRIu64 " device_frames=%" PRIu64 " max_request=%" PRIu64 " delivery=%.6f "
            "steady_delivery=%.6f audio_startup_ms=%.3f "
-           "display_resets=%" PRIu64 " display_skipped=%" PRIu64 " input_packets=%" PRIu64 "\n",
+           "display_resets=%" PRIu64 " display_skipped=%" PRIu64 " input_packets=%" PRIu64
+           " device_latency_ms=%.3f\n",
            m8live_get(s->audio, 11), m8live_get(s->audio, 10), m8live_get(s->audio, 12),
            elapsed > 0 ? m8live_get(s->audio, 3) / 44100.0 / elapsed : 0,
            steady, p->consumer_started ? (p->consumer_started-s->started)/1e6 : 0,
-           p->display_resets, p->display_skipped, p->inputs);
+           p->display_resets, p->display_skipped, p->inputs, m8live_get(s->audio, 19) / 1e3);
     printf("aot_timing=%d native_calls=%" PRIu64 " native_ms=%.3f hook_ms=%.3f native_share=%.6f\n",
            p->timing_enabled, p->native_calls, p->native_ns/1e6, p->hook_ns/1e6,
            p->runtime_ns ? (double)p->native_ns / p->runtime_ns : 0);

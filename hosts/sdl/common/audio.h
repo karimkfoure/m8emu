@@ -23,7 +23,8 @@ void m8live_consume(m8live_audio *a, void *out, size_t frames);
  * occupancy after consumption; 8 rejected frames; 9 callback errors;
  * 10 device frames (at device rate); 11 device rate; 12 maximum callback
  * request; 13 first marked onset output frame + 1; 14 onset monotonic ns;
- * 15 nonzero admitted frames; 16 peak; 17 sum of squared samples; 18 samples. */
+ * 15 nonzero admitted frames; 16 peak; 17 sum of squared samples; 18 samples;
+ * 19 device output delay after the callback in microseconds, 0 if unknown. */
 uint64_t m8live_get(m8live_audio *a, unsigned field);
 const char *m8live_driver(m8live_audio *a);
 void m8live_mark_onset(m8live_audio *a, unsigned threshold);
