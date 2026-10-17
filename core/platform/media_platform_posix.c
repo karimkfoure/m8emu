@@ -96,6 +96,16 @@ static int empty_directory(media *m,const char *path)
     if(!result && errno)result=m8_media_fail(m,"Cannot enumerate export directory: %s",strerror(errno));
     closedir(d);return result;
 }
+#ifdef __APPLE__
+/* macOS links /tmp, /var and /etc to /private with root-owned symlinks. */
+static int system_link(const char *path,const struct stat *link)
+{
+    struct stat target;
+    return S_ISLNK(link->st_mode) && link->st_uid==0 && !stat(path,&target) && S_ISDIR(target.st_mode);
+}
+#else
+static int system_link(const char *path,const struct stat *link){(void)path;(void)link;return 0;}
+#endif
 static int create_directory_path(media *m,const char *path)
 {
     char *copy=strdup(path);if(!copy)return m8_media_fail(m,"Cannot allocate export path");
@@ -103,7 +113,7 @@ static int create_directory_path(media *m,const char *path)
         if(*p && *p!='/')continue;
         char old=*p;*p=0;
         if(mkdir(copy,0700) && errno!=EEXIST){free(copy);return m8_media_fail(m,"Cannot create export directory: %s",strerror(errno));}
-        struct stat st;if(lstat(copy,&st) || !S_ISDIR(st.st_mode)){free(copy);return m8_media_fail(m,"Export path must contain directories without links");}
+        struct stat st;if(lstat(copy,&st) || !(S_ISDIR(st.st_mode) || system_link(copy,&st))){free(copy);return m8_media_fail(m,"Export path must contain directories without links");}
         *p=old;if(!old)break;
     }
     free(copy);return 0;

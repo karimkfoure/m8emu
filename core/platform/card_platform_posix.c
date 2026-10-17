@@ -61,7 +61,11 @@ static char *absolute_path(const char *path)
     if (!path) {
         const char *data = getenv("XDG_DATA_HOME");
         if (data && *data) expanded = append(data, "/m8-live/card.img");
+#ifdef __APPLE__
+        else if (home && *home) expanded = append(home, "/Library/Application Support/m8-live/card.img");
+#else
         else if (home && *home) expanded = append(home, "/.local/share/m8-live/card.img");
+#endif
         else { errno = ENOENT; return NULL; }
     } else if (path[0] == '~' && (!path[1] || path[1] == '/')) {
         if (!home || !*home) { errno = ENOENT; return NULL; }

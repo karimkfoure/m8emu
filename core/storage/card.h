@@ -6,7 +6,8 @@
 typedef struct m8_card m8_card;
 
 /* NULL path selects $XDG_DATA_HOME/m8-live/card.img, or
- * $HOME/.local/share/m8-live/card.img. create permits a new empty 128 MiB
+ * $HOME/.local/share/m8-live/card.img ($HOME/Library/Application Support/
+ * m8-live/card.img on macOS). create permits a new empty 128 MiB
  * FAT16 image. Each open holds an exclusive lock until close. */
 m8_card *m8_card_open(const char *path, int read_only, int create,
                       char *error, size_t error_capacity);

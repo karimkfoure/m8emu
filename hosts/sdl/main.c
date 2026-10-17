@@ -126,7 +126,11 @@ static void usage(void) {
          "  --config NAME          m8c config file in its SDL preference directory\n"
          "  --play / --no-play     Start playback / leave transport stopped\n"
          "The default card is $XDG_DATA_HOME/m8-live/card.img or\n"
+#ifdef __APPLE__
+         "$HOME/Library/Application Support/m8-live/card.img. Clean exit saves it with .bak.");
+#else
          "$HOME/.local/share/m8-live/card.img. Clean exit saves it with .bak.");
+#endif
 }
 static double number(const char *s) {
     char *end;
