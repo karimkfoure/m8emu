@@ -60,6 +60,24 @@
       }
     },
     {
+      "name": "macos",
+      "inherits": "native-base",
+      "displayName": "macOS Apple Silicon with synthetic build-time PGO",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "M8_PGO": "AUTO",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "M8_NATIVE_TLS_INITIAL_EXEC": "OFF",
+        "M8_PGO_JOBS": "4",
+        "M8_PGO_TRAIN_JOBS": "4"
+      }
+    },
+    {
       "name": "macos-dev",
       "inherits": "native-base",
       "displayName": "macOS Apple Silicon without PGO",
@@ -100,6 +118,10 @@
       "name": "linux-dev",
       "configurePreset": "linux-dev",
       "jobs": 2
+    },
+    {
+      "name": "macos",
+      "configurePreset": "macos"
     },
     {
       "name": "macos-dev",

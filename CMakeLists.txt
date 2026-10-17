@@ -211,10 +211,11 @@ if(M8_COMBINED_RUNTIME)
     set(m8_runtime_engine unicorn_static)
     set(m8_test_engine m8rt)
 endif()
-if(M8_UNICORN_PGO STREQUAL "generate" AND BUILD_SHARED_LIBS)
+if(M8_UNICORN_PGO STREQUAL "generate" AND BUILD_SHARED_LIBS AND CMAKE_C_COMPILER_ID STREQUAL "GNU")
     # Ordinary archive linkage omits unused object files. Their profiles would
     # be missing when the use build compiles every archive source. Include all
     # profile constructors during training; use builds keep normal linkage.
+    # LLVM use builds accept functions without profile records.
     get_target_property(unicorn_links unicorn LINK_LIBRARIES)
     set(unicorn_profile_links "")
     foreach(library IN LISTS unicorn_links)

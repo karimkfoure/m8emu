@@ -5,13 +5,13 @@ foreach(component AOT RT UNICORN)
     set(M8_${component}_CPU "" CACHE STRING "${component}: optional ARM64 CPU (cortex-a53 or cortex-a35)")
     set_property(CACHE M8_${component}_CPU PROPERTY STRINGS "" cortex-a53 cortex-a35)
     option(M8_${component}_LTO "${component}: enable interprocedural optimization" OFF)
-    set(M8_${component}_PGO off CACHE STRING "${component}: GCC profile mode (off, generate, use)")
+    set(M8_${component}_PGO off CACHE STRING "${component}: GCC or Clang profile mode (off, generate, use)")
     set_property(CACHE M8_${component}_PGO PROPERTY STRINGS off generate use)
     set(M8_${component}_ORDER_FILE "" CACHE FILEPATH "${component}: optional GNU ld function-section order script")
     option(M8_${component}_COLD_PARTITION "${component} PGO use: split cold blocks from hot code" OFF)
     option(M8_${component}_NO_PLT "${component}: avoid PLT calls on supported ELF targets" OFF)
 endforeach()
-set(M8_PGO_DIR pgo-data CACHE STRING "GCC profile directory; relative paths use the benchmark working directory")
+set(M8_PGO_DIR pgo-data CACHE STRING "GCC profile directory or Clang default.profdata directory; relative paths use the benchmark working directory")
 
 function(m8_tune_target target component)
     set(prefix M8_${component})
@@ -57,22 +57,23 @@ function(m8_tune_target target component)
         target_compile_options(${target} PRIVATE -fno-plt)
     endif()
     if(NOT ${prefix}_PGO STREQUAL "off" AND NOT "${ARGV2}" STREQUAL "NO_PGO")
-        if(NOT CMAKE_C_COMPILER_ID STREQUAL "GNU")
-            message(FATAL_ERROR "${prefix}_PGO requires GCC; Clang uses a different profile format")
+        if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
+            message(FATAL_ERROR "${prefix}_PGO requires GCC or Clang")
         endif()
         if(NOT M8_PGO_DIR)
             message(FATAL_ERROR "M8_PGO_DIR must not be empty")
         endif()
         # Stable names permit generation on the device and use in another host
         # build directory. Keep source, compiler, definitions and flags fixed.
-        target_compile_options(${target} PRIVATE -fprofile-prefix-path=${CMAKE_BINARY_DIR})
-        if(${prefix}_PGO STREQUAL "generate")
-            target_compile_options(${target} PRIVATE -fprofile-generate=${M8_PGO_DIR}
-                -fprofile-update=atomic -ftest-coverage)
+        if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+            m8_llvm_profile(${target} ${${prefix}_PGO} "${M8_PGO_DIR}")
+        elseif(${prefix}_PGO STREQUAL "generate")
+            target_compile_options(${target} PRIVATE -fprofile-prefix-path=${CMAKE_BINARY_DIR}
+                -fprofile-generate=${M8_PGO_DIR} -fprofile-update=atomic -ftest-coverage)
             target_link_options(${target} PRIVATE -fprofile-generate=${M8_PGO_DIR})
         else()
-            target_compile_options(${target} PRIVATE -fprofile-use=${M8_PGO_DIR}
-                -Werror=missing-profile -Werror=coverage-mismatch)
+            target_compile_options(${target} PRIVATE -fprofile-prefix-path=${CMAKE_BINARY_DIR}
+                -fprofile-use=${M8_PGO_DIR} -Werror=missing-profile -Werror=coverage-mismatch)
             target_link_options(${target} PRIVATE -fprofile-use=${M8_PGO_DIR})
         endif()
     endif()
@@ -92,6 +93,19 @@ function(m8_tune_target target component)
         target_compile_options(${target} PRIVATE -ffunction-sections -freorder-functions)
         target_link_options(${target} PRIVATE "LINKER:-T,${${prefix}_ORDER_FILE}")
         set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS "${${prefix}_ORDER_FILE}")
+    endif()
+endfunction()
+
+# LLVM IR profiles. Generate writes DIR/default_<signature>.profraw unless
+# LLVM_PROFILE_FILE redirects it; use reads DIR/default.profdata from
+# llvm-profdata merge. A function hash mismatch is a backend diagnostic and
+# stays fatal like GCC's coverage-mismatch.
+function(m8_llvm_profile target mode directory)
+    if(mode MATCHES "^(generate|GENERATE)$")
+        target_compile_options(${target} PRIVATE "-fprofile-generate=${directory}" -fprofile-update=atomic)
+        target_link_options(${target} PRIVATE "-fprofile-generate=${directory}")
+    else()
+        target_compile_options(${target} PRIVATE "-fprofile-use=${directory}" -Werror=backend-plugin)
     endif()
 endfunction()
 

@@ -13,11 +13,15 @@ import sys
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from training import merge_profiles, profile_environment, run_cases
+from training import llvm_environment, merge_llvm_profiles, merge_profiles, profile_environment, run_cases
 
 COMPONENTS = {'m8aot': 'aot', 'm8native-regions': 'regions', 'm8native-step': 'handlers',
               'm8rt': 'runtime', 'unicorn': 'unicorn', 'unicorn-common': 'unicorn',
               'arm-softmmu': 'unicorn'}
+# One exported, instrumented function identifies each LLVM profile image.
+LLVM_ANCHORS = {'m8rt_create_aot': 'runtime', 'uc_open': 'unicorn', 'm8_aot_entries': 'aot',
+                'm8_native_region_step': 'regions', 'm8_session_hot_m8_native_region_step': 'regions',
+                'm8_native_step': 'handlers'}
 EXACT = ('pcm_bytes', 'pcm_sha256', 'end_iters', 'end_cycles', 'end_pc', 'non_silent')
 SOURCE_SUFFIXES = {'.c', '.h', '.inc', '.s', '.py', '.cmake', '.txt', '.json', '.in', '.patch'}
 
@@ -110,6 +114,42 @@ def validate_profiles(objects, profiles, dump):
     return rows
 
 
+def validate_llvm_profiles(profiles, tool):
+    """Each instrumented image contributes exactly one raw or merged profile."""
+    rows, seen = [], set()
+    for path in sorted([*profiles.rglob('*.profraw'), *profiles.rglob('*.profdata')]):
+        text = subprocess.check_output([str(tool), 'show', '--all-functions', str(path)], text=True, timeout=300)
+        names = set(re.findall(r'^  (\S.*):$', text, re.M))
+        components = sorted({LLVM_ANCHORS[name] for name in names & LLVM_ANCHORS.keys()})
+        if not components or seen & set(components):
+            raise ValueError(f'Profile has no unique instrumented image: {path}: {components}')
+        seen.update(components)
+        rows.append(dict(component=','.join(components), data=str(path.relative_to(profiles)),
+                         data_sha256=sha(path), functions=len(names)))
+    missing = sorted(set(LLVM_ANCHORS.values()) - seen)
+    if missing:
+        raise ValueError('Training missed profile images: ' + ', '.join(missing))
+    return rows
+
+
+def llvm_profdata(targets):
+    """Raw profiles are bound to one LLVM release; use its own merge tool."""
+    compiler = Path(shutil.which(targets['compiler']) or targets['compiler']).resolve()
+    if sys.platform == 'darwin':
+        found = subprocess.check_output(['xcrun', '--find', 'llvm-profdata'], text=True, timeout=30).strip()
+    else:
+        sibling = compiler.with_name('llvm-profdata')
+        found = str(sibling) if sibling.is_file() else shutil.which(
+            'llvm-profdata-' + targets['compiler_version'].split('.')[0]) or shutil.which('llvm-profdata')
+    if not found:
+        raise ValueError('llvm-profdata for the profile compiler is missing')
+    version = subprocess.check_output([found, '--version'], text=True, timeout=10)
+    release = '.'.join(targets['compiler_version'].split('.')[:3])
+    if not re.search(r'LLVM version ' + re.escape(release) + r'\b', version):
+        raise ValueError('llvm-profdata version differs from the compiler: ' + found)
+    return Path(found)
+
+
 def tool_for(compiler, name):
     path = Path(compiler)
     match = re.fullmatch(r'(.*)gcc(-\d+)?', path.name)
@@ -192,11 +232,14 @@ class Build:
             for path in (case_profiles, merge_scratch):
                 if path.exists():
                     shutil.rmtree(path)
-            dump, merge = tool_for(targets['compiler'], 'gcov-dump'), tool_for(targets['compiler'], 'gcov-tool')
-            for tool in (dump, merge):
-                version = subprocess.check_output([tool, '--version'], text=True, timeout=10)
-                if not re.search(r'\b' + re.escape(targets['compiler_version']) + r'\b', version):
-                    raise ValueError('GCC profile tool version differs from the compiler: ' + str(tool))
+            if self.llvm:
+                dump = merge = llvm_profdata(targets)
+            else:
+                dump, merge = tool_for(targets['compiler'], 'gcov-dump'), tool_for(targets['compiler'], 'gcov-tool')
+                for tool in (dump, merge):
+                    version = subprocess.check_output([tool, '--version'], text=True, timeout=10)
+                    if not re.search(r'\b' + re.escape(targets['compiler_version']) + r'\b', version):
+                        raise ValueError('GCC profile tool version differs from the compiler: ' + str(tool))
         for fixture in rows:
             name = fixture['name']
             if not re.fullmatch(r'[A-Za-z0-9_-]+', name):
@@ -210,13 +253,14 @@ class Build:
             # The runner explicitly selects all model controls; inherited cold
             # owner settings must not select a different experiment.
             for variable in tuple(env):
-                if variable.startswith('M8RT_') or variable in ('GCOV_PREFIX', 'GCOV_PREFIX_STRIP'):
+                if variable.startswith('M8RT_') or variable in ('GCOV_PREFIX', 'GCOV_PREFIX_STRIP', 'LLVM_PROFILE_FILE'):
                     env.pop(variable)
             directories = list(dict.fromkeys(str(Path(targets[key]).parent) for key in
                                ('runtime', 'unicorn', 'aot', 'regions', 'handlers', 'sdl')))
-            env['LD_LIBRARY_PATH'] = ':'.join(directories)
+            env['DYLD_LIBRARY_PATH' if sys.platform == 'darwin' else 'LD_LIBRARY_PATH'] = ':'.join(directories)
             if phase == 'generate':
-                env.update(profile_environment(self.profiles, case_profiles / name))
+                env.update(llvm_environment(case_profiles / name) if self.llvm else
+                           profile_environment(self.profiles, case_profiles / name))
             jobs.append(dict(name=name, directory=directory, environment=env,
                              stdout=self.work / (phase + '-' + name + '.stdout'),
                              stderr=self.work / (phase + '-' + name + '.stderr'),
@@ -244,7 +288,8 @@ class Build:
             if fixture.get('non_silent') and not result['non_silent']:
                 raise ValueError('Synthetic audible fixture produced silence: ' + name)
             if phase == 'generate':
-                matched = validate_profiles(self.objects, case_profiles / name, dump)
+                matched = (validate_llvm_profiles(case_profiles / name, dump) if self.llvm else
+                           validate_profiles(self.objects, case_profiles / name, dump))
                 proofs[index] = dict(name=name, objects=len(matched), data_sha256=hashlib.sha256(
                     json.dumps(matched, sort_keys=True).encode()).hexdigest())
                 self.report['training_profiles'] = [proofs[i] for i in sorted(proofs)]
@@ -255,11 +300,15 @@ class Build:
 
         run_cases(jobs, workers=self.args.train_jobs, timeout=self.args.timeout, completed=completed)
         if phase == 'generate':
-            merged = merge_profiles([case_profiles / row['name'] for row in rows], merge, merge_scratch)
-            validate_profiles(self.objects, merged, dump)
+            if self.llvm:
+                merged = merge_llvm_profiles([case_profiles / row['name'] for row in rows], merge, merge_scratch)
+                validate_llvm_profiles(merged, dump)
+            else:
+                merged = merge_profiles([case_profiles / row['name'] for row in rows], merge, merge_scratch)
+                validate_profiles(self.objects, merged, dump)
             if self.profiles.exists():
-                if any(self.profiles.rglob('*.gcda')):
-                    raise ValueError('Unexpected shared GCC data outside the isolated training cases')
+                if any(self.profiles.rglob('*.profraw' if self.llvm else '*.gcda')):
+                    raise ValueError('Unexpected shared profile data outside the isolated training cases')
                 shutil.rmtree(self.profiles)
             shutil.copytree(merged, self.profiles)
             self.report['profile_merge'] = dict(tool=str(merge), weights='1:1',
@@ -284,6 +333,8 @@ class Build:
             copied[str(target.relative_to(destination))] = sha(target)
         for row in self.report['profile_objects']:
             for category, origin, field in (('notes', self.objects, 'note'), ('profiles', self.profiles, 'data')):
+                if field not in row:
+                    continue
                 source = origin / row[field]
                 target = destination / category / row[field]
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -298,35 +349,60 @@ class Build:
         self.save()
 
     @staticmethod
-    def portable_rpath(path, desired, readelf, patch, allow_empty=False):
+    def dynamic(path, readelf):
+        """Runtime search paths and the library's own load name (SONAME or install id)."""
+        if sys.platform == 'darwin':
+            text = subprocess.check_output([readelf, '-l', str(path)], text=True, timeout=30)
+            identity = re.search(r'cmd LC_ID_DYLIB\n.*\n\s+name (.+) \(offset \d+\)', text)
+            return (re.findall(r'cmd LC_RPATH\n.*\n\s+path (.+) \(offset \d+\)', text),
+                    identity and identity[1])
         text = subprocess.check_output([readelf, '-d', str(path)], text=True, timeout=30)
         match = re.search(r'\((?:RUNPATH|RPATH)\).*\[([^\]]+)\]', text)
-        if match and match[1] == desired:
+        soname = re.search(r'\(SONAME\).*\[([^\]]+)\]', text)
+        return [match[1]] if match else [], soname and soname[1]
+
+    @classmethod
+    def portable_rpath(cls, path, desired, readelf, patch, allow_empty=False):
+        paths = cls.dynamic(path, readelf)[0]
+        if paths == [desired]:
             return
-        if not match and allow_empty:
+        if not paths and allow_empty:
             return
         if not patch:
             raise ValueError(f'Bundle path requires RPATH {desired}: {path}; configure BUILD_WITH_INSTALL_RPATH or install patchelf')
-        subprocess.run([patch, '--set-rpath', desired, str(path)], check=True, timeout=30)
+        if sys.platform != 'darwin':
+            subprocess.run([patch, '--set-rpath', desired, str(path)], check=True, timeout=30)
+            return
+        # Load-command edits invalidate the arm64 signature; sign ad hoc again.
+        for old in paths:
+            subprocess.run([patch, '-delete_rpath', old, str(path)], check=True, timeout=30)
+        subprocess.run([patch, '-add_rpath', desired, str(path)], check=True, timeout=30)
+        subprocess.run(['codesign', '--force', '--sign', '-', str(path)], check=True, timeout=30)
 
     def bundle(self, targets):
-        readelf = shutil.which('readelf')
-        patch = shutil.which('patchelf')
+        macho = sys.platform == 'darwin'
+        readelf = shutil.which('otool' if macho else 'readelf')
+        patch = shutil.which('install_name_tool' if macho else 'patchelf')
+        origin = '@loader_path' if macho else '$ORIGIN'
         if not readelf:
-            raise ValueError('The portable bundle requires readelf')
+            raise ValueError('The portable bundle requires ' + ('otool' if macho else 'readelf'))
         libraries = self.output / 'lib'
         libraries.mkdir(exist_ok=True)
-        paths = [Path(targets[key]) for key in ('runtime', 'aot', 'regions', 'handlers', 'unicorn', 'sdl')]
+        keys = ['runtime', 'aot', 'regions', 'handlers', 'unicorn', 'sdl']
+        if macho and not (self.dynamic(targets['sdl'], readelf)[1] or '').startswith('@rpath/'):
+            # The app records an installed SDL3 by its absolute install name.
+            keys.remove('sdl')
+        paths = [Path(targets[key]) for key in keys]
         files = []
         for path in paths:
             destination = libraries / path.name
             shutil.copy2(path, destination)
-            self.portable_rpath(destination, '$ORIGIN', readelf, patch,
+            self.portable_rpath(destination, origin, readelf, patch,
                                 allow_empty=path == Path(targets['sdl']))
-            dynamic = subprocess.check_output([readelf, '-d', str(destination)], text=True, timeout=30)
-            match = re.search(r'\(SONAME\).*\[([^\]]+)\]', dynamic)
-            if match and match[1] != destination.name:
-                alias = libraries / match[1]
+            soname = self.dynamic(destination, readelf)[1]
+            soname = soname and Path(soname).name
+            if soname and soname != destination.name:
+                alias = libraries / soname
                 if alias.is_symlink():
                     alias.unlink()
                 if alias.exists():
@@ -335,7 +411,7 @@ class Build:
             files.append(destination)
         app = self.output / 'm8emu'
         shutil.copy2(targets['app'], app)
-        self.portable_rpath(app, '$ORIGIN/lib', readelf, patch)
+        self.portable_rpath(app, origin + '/lib', readelf, patch)
         files.append(app)
         controllers = self.output / 'gamecontrollerdb.txt'
         shutil.copy2(Path(targets['app']).parent / controllers.name, controllers)
@@ -373,6 +449,7 @@ class Build:
             self.configure('GENERATE')
             self.build('GENERATE')
             targets = json.loads((self.objects / 'pgo-targets.json').read_text())
+            self.llvm = targets.get('compiler_id', 'GNU') != 'GNU'
             values = cache(self.objects / 'CMakeCache.txt')
             command = [sys.executable, self.root / 'pgo/generate.py', '--output', self.work / 'training']
             if values.get('M8_PGO_FIXTURES'):
@@ -386,14 +463,17 @@ class Build:
                 raise ValueError('Synthetic training manifest is empty')
             self.report['training_manifest_sha256'] = sha(self.work / 'training/manifest.json')
             generated = self.capture('generate', targets, rows)
-            dump = tool_for(targets['compiler'], 'gcov-dump')
-            version = subprocess.check_output([dump, '--version'], text=True, timeout=10)
-            if not re.search(r'\b' + re.escape(targets['compiler_version']) + r'\b', version):
-                raise ValueError('gcov-dump version differs from the training compiler')
-            self.report['profile_objects'] = validate_profiles(self.objects, self.profiles, dump)
+            if self.llvm:
+                self.report['profile_objects'] = validate_llvm_profiles(self.profiles, llvm_profdata(targets))
+            else:
+                dump = tool_for(targets['compiler'], 'gcov-dump')
+                version = subprocess.check_output([dump, '--version'], text=True, timeout=10)
+                if not re.search(r'\b' + re.escape(targets['compiler_version']) + r'\b', version):
+                    raise ValueError('gcov-dump version differs from the training compiler')
+                self.report['profile_objects'] = validate_profiles(self.objects, self.profiles, dump)
             self.snapshot_generate(targets)
             # Configure the same object directory so GCC's profile names stay
-            # identical. Missing-profile and coverage-mismatch remain fatal.
+            # identical. Missing-profile and coverage or LLVM hash mismatches stay fatal.
             self.configure('USE')
             self.build('USE')
             used = self.capture('use', targets, rows)

@@ -1,4 +1,4 @@
-"""Collect isolated GCC training runs and merge them in a fixed order."""
+"""Collect isolated GCC or LLVM training runs and merge them in a fixed order."""
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 from pathlib import Path
@@ -14,6 +14,11 @@ def profile_environment(embedded_prefix, case_directory):
         raise ValueError('The embedded GCC profile prefix must be absolute: ' + str(prefix))
     return {'GCOV_PREFIX': str(Path(case_directory).resolve()),
             'GCOV_PREFIX_STRIP': str(len(prefix.parts) - 1)}
+
+
+def llvm_environment(case_directory):
+    # %m writes one raw profile per instrumented image into the case directory.
+    return {'LLVM_PROFILE_FILE': str(Path(case_directory).resolve() / '%m.profraw')}
 
 
 class CaseFailure(RuntimeError):
@@ -116,4 +121,22 @@ def merge_profiles(directories, tool, scratch, timeout=60):
             subprocess.run([str(tool), 'merge', str(merged), str(right), '-o', str(destination)],
                            stdout=log, stderr=subprocess.STDOUT, check=True, timeout=timeout)
             merged = destination
+    return merged
+
+
+def merge_llvm_profiles(directories, tool, scratch, timeout=600):
+    """Sum validated raw cases with equal weights into DIR/default.profdata."""
+    directories = [Path(path).resolve() for path in directories]
+    if not directories or len(set(directories)) != len(directories):
+        raise ValueError('Profile merge needs a nonempty unique ordered case list')
+    if any(not path.is_dir() or not any(path.rglob('*.profraw')) for path in directories):
+        raise ValueError('Profile merge input is missing LLVM raw data')
+    merged = Path(scratch) / 'merged'
+    if merged.exists():
+        raise ValueError('Profile merge output already exists: ' + str(merged))
+    merged.mkdir(parents=True)
+    inputs = [str(path) for directory in directories for path in sorted(directory.rglob('*.profraw'))]
+    with (Path(scratch) / 'merge.log').open('wb') as log:
+        subprocess.run([str(tool), 'merge', '--failure-mode=any', '-o', str(merged / 'default.profdata'), *inputs],
+                       stdout=log, stderr=subprocess.STDOUT, check=True, timeout=timeout)
     return merged
