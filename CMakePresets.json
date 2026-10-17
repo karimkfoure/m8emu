@@ -74,7 +74,9 @@
         "CMAKE_OSX_ARCHITECTURES": "arm64",
         "M8_NATIVE_TLS_INITIAL_EXEC": "OFF",
         "M8_PGO_JOBS": "4",
-        "M8_PGO_TRAIN_JOBS": "4"
+        "M8_PGO_TRAIN_JOBS": "4",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "13.0",
+        "CMAKE_DISABLE_FIND_PACKAGE_SDL3": "ON"
       }
     },
     {
@@ -90,7 +92,9 @@
         "M8_PGO": "OFF",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_OSX_ARCHITECTURES": "arm64",
-        "M8_NATIVE_TLS_INITIAL_EXEC": "OFF"
+        "M8_NATIVE_TLS_INITIAL_EXEC": "OFF",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "13.0",
+        "CMAKE_DISABLE_FIND_PACKAGE_SDL3": "ON"
       }
     },
     {

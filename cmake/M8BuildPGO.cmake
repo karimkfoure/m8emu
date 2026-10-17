@@ -29,7 +29,7 @@ function(m8_pgo_orchestrate result)
     get_cmake_property(cache_variables CACHE_VARIABLES)
     set(forward "# Effective public configure inputs.\n")
     foreach(name IN LISTS cache_variables)
-        if(name MATCHES "^(M8_|SDL|CMAKE_(C_COMPILER|CXX_COMPILER|AR|RANLIB|OSX_ARCHITECTURES|OSX_DEPLOYMENT_TARGET|OSX_SYSROOT|TOOLCHAIN_FILE|PREFIX_PATH|FIND_ROOT_PATH|SYSROOT|BUILD_TYPE|CROSSCOMPILING_EMULATOR|C_FLAGS|EXE_LINKER_FLAGS|SHARED_LINKER_FLAGS))" AND
+        if(name MATCHES "^(M8_|SDL|CMAKE_DISABLE_FIND_PACKAGE_|CMAKE_(C_COMPILER|CXX_COMPILER|AR|RANLIB|OSX_ARCHITECTURES|OSX_DEPLOYMENT_TARGET|OSX_SYSROOT|TOOLCHAIN_FILE|PREFIX_PATH|FIND_ROOT_PATH|SYSROOT|BUILD_TYPE|CROSSCOMPILING_EMULATOR|C_FLAGS|EXE_LINKER_FLAGS|SHARED_LINKER_FLAGS))" AND
            NOT name MATCHES "^(M8_PGO_PHASE|M8_PGO_PROFILE_DIR)$" AND
            NOT name MATCHES "(_BINARY_DIR|_SOURCE_DIR|_FOUND|_DIR)$")
             get_property(type CACHE "${name}" PROPERTY TYPE)
@@ -46,12 +46,22 @@ function(m8_pgo_orchestrate result)
         endif()
     endforeach()
     file(WRITE "${CMAKE_BINARY_DIR}/pgo-forward.cmake" "${forward}")
+    set(app_command "")
+    if(APPLE AND M8_PORTABLE_BUNDLE)
+        # Package the trained bundle as m8emu.app, as the unprofiled build does.
+        set(M8_CODESIGN_IDENTITY "-" CACHE STRING "macOS code-signing identity for m8emu.app; - signs ad hoc")
+        set(app_command COMMAND "${CMAKE_COMMAND}" "-DAPP=${CMAKE_BINARY_DIR}/m8emu.app"
+            "-DBUNDLE=${CMAKE_BINARY_DIR}" "-DPLIST=${CMAKE_SOURCE_DIR}/hosts/sdl/Info.plist.in"
+            "-DVERSION=${PROJECT_VERSION}" "-DIDENTITY=${M8_CODESIGN_IDENTITY}"
+            -P "${CMAKE_SOURCE_DIR}/cmake/M8MacApp.cmake")
+    endif()
     add_custom_target(m8emu ALL
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/pgo/build.py"
             --source "${CMAKE_SOURCE_DIR}" --build "${CMAKE_BINARY_DIR}"
             --cmake "${CMAKE_COMMAND}" --generator "${CMAKE_GENERATOR}"
             --cache "${CMAKE_BINARY_DIR}/pgo-forward.cmake"
             --jobs "${M8_PGO_JOBS}" --train-jobs "${M8_PGO_TRAIN_JOBS}" --timeout "${M8_PGO_TIMEOUT}"
+        ${app_command}
         USES_TERMINAL VERBATIM)
     set(${result} TRUE PARENT_SCOPE)
 endfunction()

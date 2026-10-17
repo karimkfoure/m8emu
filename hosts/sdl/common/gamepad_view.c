@@ -44,6 +44,13 @@ static struct {
 
 /* ---- printed names ---- */
 
+/* SDL 3.4 added the GameCube type; the pinned 3.2 source lacks it. */
+#if SDL_VERSION_ATLEAST(3, 3, 0)
+#define M8_GAMECUBE(type) ((type) == SDL_GAMEPAD_TYPE_GAMECUBE)
+#else
+#define M8_GAMECUBE(type) 0
+#endif
+
 typedef enum { GENERIC, XBOX, PLAYSTATION, NINTENDO } family;
 static family pad_family(SDL_Gamepad *pad) {
     switch (pad ? SDL_GetGamepadType(pad) : SDL_GAMEPAD_TYPE_UNKNOWN) {
@@ -51,8 +58,8 @@ static family pad_family(SDL_Gamepad *pad) {
     case SDL_GAMEPAD_TYPE_PS3: case SDL_GAMEPAD_TYPE_PS4: case SDL_GAMEPAD_TYPE_PS5: return PLAYSTATION;
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO: case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT: case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-    case SDL_GAMEPAD_TYPE_GAMECUBE: return NINTENDO;
-    default: return GENERIC;
+        return NINTENDO;
+    default: return M8_GAMECUBE(SDL_GetGamepadType(pad)) ? NINTENDO : GENERIC;
     }
 }
 
@@ -76,7 +83,7 @@ const char *m8_gamepad_label(SDL_Gamepad *pad, int button) {
                type == SDL_GAMEPAD_TYPE_PS5 ? "CREATE" : f == NINTENDO ? "MINUS" : f == XBOX ? "BACK" : "SELECT";
     case SDL_GAMEPAD_BUTTON_START:
         return type == SDL_GAMEPAD_TYPE_XBOXONE ? "MENU" : type == SDL_GAMEPAD_TYPE_PS4 ||
-               type == SDL_GAMEPAD_TYPE_PS5 ? "OPTIONS" : f == NINTENDO && type != SDL_GAMEPAD_TYPE_GAMECUBE ? "PLUS" : "START";
+               type == SDL_GAMEPAD_TYPE_PS5 ? "OPTIONS" : f == NINTENDO && !M8_GAMECUBE(type) ? "PLUS" : "START";
     case SDL_GAMEPAD_BUTTON_GUIDE: return f == XBOX ? "XBOX" : f == PLAYSTATION ? "PS" : f == NINTENDO ? "HOME" : "GUIDE";
     case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return pairs[f][0];
     case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return pairs[f][1];
@@ -128,8 +135,7 @@ static const char *type_name(SDL_Gamepad *pad) {
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT: return "JOY-L";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT: return "JOY-R";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR: return "JOYLR";
-    case SDL_GAMEPAD_TYPE_GAMECUBE: return "GC";
-    default: return "---";
+    default: return M8_GAMECUBE(SDL_GetGamepadType(pad)) ? "GC" : "---";
     }
 }
 
