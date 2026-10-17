@@ -306,3 +306,15 @@ if(M8_PORTABLE_BUNDLE AND TARGET m8emu)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "${CMAKE_BINARY_DIR}/lib/$<TARGET_SONAME_FILE_NAME:SDL3::SDL3>")
     endif()
 endif()
+if(APPLE AND M8_PORTABLE_BUNDLE AND TARGET m8emu)
+    # Signed, self-contained m8emu.app beside the bundle. It loads the same
+    # firmware and libraries from Contents/Resources and Contents/Frameworks.
+    set(M8_CODESIGN_IDENTITY "-" CACHE STRING "macOS code-signing identity for m8emu.app; - signs ad hoc")
+    add_custom_target(m8emu-app ALL
+        COMMAND ${CMAKE_COMMAND} "-DAPP=${CMAKE_BINARY_DIR}/m8emu.app" "-DBUNDLE=${CMAKE_BINARY_DIR}"
+            "-DPLIST=${CMAKE_CURRENT_LIST_DIR}/Info.plist.in" "-DVERSION=${PROJECT_VERSION}" "-DIDENTITY=${M8_CODESIGN_IDENTITY}"
+            -P "${M8_ROOT}/cmake/M8MacApp.cmake"
+        DEPENDS m8emu "${M8_ROOT}/cmake/M8MacApp.cmake" "${CMAKE_CURRENT_LIST_DIR}/Info.plist.in"
+        BYPRODUCTS "${CMAKE_BINARY_DIR}/m8emu.app/Contents/MacOS/m8emu"
+        COMMENT "Assemble m8emu.app" VERBATIM)
+endif()

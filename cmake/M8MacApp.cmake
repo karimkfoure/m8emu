@@ -1,0 +1,50 @@
+# Assemble a self-contained macOS application from the portable bundle.
+# Script mode: cmake -DAPP=... -DBUNDLE=... -DPLIST=... -DVERSION=... [-DIDENTITY=...] -P M8MacApp.cmake
+foreach(required APP BUNDLE PLIST VERSION)
+    if(NOT DEFINED ${required})
+        message(FATAL_ERROR "M8MacApp: ${required} is required")
+    endif()
+endforeach()
+if(NOT IDENTITY)
+    set(IDENTITY "-")
+endif()
+set(contents "${APP}/Contents")
+file(REMOVE_RECURSE "${APP}")
+file(MAKE_DIRECTORY "${contents}/MacOS" "${contents}/Frameworks" "${contents}/Resources")
+configure_file("${PLIST}" "${contents}/Info.plist" @ONLY)
+file(COPY "${BUNDLE}/m8emu" DESTINATION "${contents}/MacOS" FOLLOW_SYMLINK_CHAIN)
+file(COPY "${BUNDLE}/firmware" "${BUNDLE}/gamecontrollerdb.txt" DESTINATION "${contents}/Resources")
+file(GLOB libraries "${BUNDLE}/lib/*.dylib")
+file(COPY ${libraries} DESTINATION "${contents}/Frameworks" FOLLOW_SYMLINK_CHAIN)
+# SDL_GetBasePath() names Resources; runtime loaders look in its lib folder.
+file(CREATE_LINK "../Frameworks" "${contents}/Resources/lib" SYMBOLIC)
+set(executable "${contents}/MacOS/m8emu")
+execute_process(COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks" "${executable}"
+    RESULT_VARIABLE result ERROR_VARIABLE output)
+if(result)
+    message(FATAL_ERROR "install_name_tool -add_rpath failed: ${output}")
+endif()
+# An installed SDL3 keeps its absolute install name; bundle it behind @rpath.
+execute_process(COMMAND otool -L "${executable}" OUTPUT_VARIABLE linked)
+string(REGEX MATCH "\n[ \t]*(/[^ \t\n]*/libSDL3[^ \t\n/]*\\.dylib)" sdl "${linked}")
+if(sdl)
+    set(sdl "${CMAKE_MATCH_1}")
+    get_filename_component(sdl_name "${sdl}" NAME)
+    file(COPY "${sdl}" DESTINATION "${contents}/Frameworks" FOLLOW_SYMLINK_CHAIN)
+    execute_process(COMMAND install_name_tool -id "@rpath/${sdl_name}" "${contents}/Frameworks/${sdl_name}")
+    execute_process(COMMAND install_name_tool -change "${sdl}" "@rpath/${sdl_name}" "${executable}"
+        RESULT_VARIABLE result ERROR_VARIABLE output)
+    if(result)
+        message(FATAL_ERROR "install_name_tool -change failed: ${output}")
+    endif()
+endif()
+# Editing load commands invalidates signatures; sign libraries, then the app.
+# "-" signs ad hoc; a keychain identity name signs without notarization.
+file(GLOB signed "${contents}/Frameworks/*.dylib")
+foreach(path IN LISTS signed ITEMS "${APP}")
+    execute_process(COMMAND codesign --force --sign "${IDENTITY}" --timestamp=none "${path}"
+        RESULT_VARIABLE result ERROR_VARIABLE output)
+    if(result)
+        message(FATAL_ERROR "codesign failed for ${path}: ${output}")
+    endif()
+endforeach()
