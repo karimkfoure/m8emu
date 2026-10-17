@@ -19,4 +19,8 @@ uint64_t m8_render_present_count(void);
 #define SDL_SetRenderVSync m8_set_vsync
 #define SDL_SetWindowSize m8_set_window_size
 #define SDL_RenderPresent m8_render_present
+/* The gamepad view composites after m8c's log overlay, on the same target. */
+#include "log_overlay.h"
+#include "gamepad_view.h"
+#define log_overlay_render(r, w, h, s, f) (log_overlay_render(r, w, h, s, f), m8_overlay_render(r, w, h, s, f))
 #endif

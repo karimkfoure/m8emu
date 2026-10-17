@@ -108,17 +108,20 @@ add_library(m8c_embedded STATIC ${M8C}/render.c ${M8C}/command.c ${M8C}/input.c
 target_include_directories(m8c_embedded PUBLIC ${M8C})
 target_link_libraries(m8c_embedded PUBLIC SDL3::SDL3)
 target_compile_definitions(m8c_embedded PRIVATE NDEBUG M_PI=3.14159265358979323846)
-# Adapt only window creation and vsync, without changing the pinned submodule.
+# Adapt only window creation, vsync, the gamepad view and gamepad labels,
+# without changing the pinned submodule.
 if(MSVC)
   set_source_files_properties(${M8C}/render.c PROPERTIES COMPILE_OPTIONS "/FI${COMMON}/render_platform.h")
+  set_source_files_properties(${M8C}/settings.c PROPERTIES COMPILE_OPTIONS "/FI${COMMON}/settings_platform.h")
 else()
   set_source_files_properties(${M8C}/render.c PROPERTIES COMPILE_OPTIONS "-include;${COMMON}/render_platform.h")
+  set_source_files_properties(${M8C}/settings.c PROPERTIES COMPILE_OPTIONS "-include;${COMMON}/settings_platform.h")
 endif()
 add_executable(m8emu main.c metrics.c profiling.c
   ${PLATFORM}/pc-profile.c ${PLATFORM}/host-pmu.c
   ${COMMON}/audio.c ${COMMON}/audio_clock_sdl.c ${COMMON}/bridge.c
   ${COMMON}/aot.c ${COMMON}/native.c ${COMMON}/native_boot.c ${COMMON}/session_script.c
-  ${COMMON}/queue.c ${COMMON}/worker.c ${PLATFORM}/thread_policy.c ${COMMON}/handheld.c
+  ${COMMON}/queue.c ${COMMON}/worker.c ${PLATFORM}/thread_policy.c ${COMMON}/handheld.c ${COMMON}/gamepad_view.c
   ${STORAGE}/card.c ${PLATFORM}/card_platform_posix.c ${COMMON}/demo.c ${COMMON}/session.c
   ${STORAGE}/media.c ${PLATFORM}/media_platform_posix.c ${COMMON}/render_platform.c ${COMMON}/host_probe.c)
 target_include_directories(m8emu PRIVATE ${COMMON} ${M8RT}/third_party ${PLATFORM})
