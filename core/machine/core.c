@@ -16,7 +16,7 @@
  * memory API path instead of enabling unchecked host-buffer copies. */
 extern const uint64_t *uc_m8_memory_generation(uc_engine *)
     __attribute__((weak, visibility("default")));
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
@@ -937,7 +937,7 @@ static int load_firmware(m8rt *rt,const char *path) {
  * that crosses the unsigned guest address range. DWT keeps a separate buffer
  * because its 4 KiB page can be smaller than the host's page size. */
 static int reserve_guest_memory(m8rt *rt) {
-#if defined(__linux__) && UINTPTR_MAX > UINT32_MAX
+#if (defined(__linux__) || defined(__APPLE__)) && UINTPTR_MAX > UINT32_MAX
     long page=sysconf(_SC_PAGESIZE);
     if(page<=0 || (page & (page-1)) || page>128*1024) return -1;
     size_t size=UINT64_C(0x100000000)+2*(size_t)page;
@@ -955,7 +955,7 @@ static int map_buffer(m8rt *rt,m8_region *r,uint32_t base,uint32_t size,unsigned
     rt->direct_memory=false; /* Also protect any future use after creation. */
     void *p=NULL;
     if(rt->memory_offset && base!=0xe0001000u) {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
         p=rt->memory_offset+(size_t)base;
         if(mprotect(p,size,PROT_READ|PROT_WRITE)) return -1;
 #else
@@ -1019,7 +1019,7 @@ m8rt *m8rt_create_aot(const char *firmware,const char *image,const m8rt_options 
     bool fixed_requested=(requirements & M8RT_AOT_REQUIRE_FIXED_MEMORY) ||
                          (fixed_memory && *fixed_memory && strcmp(fixed_memory,"0"));
     if(fixed_requested && reserve_guest_memory(rt)) {
-        m8rt_fail(rt,"fixed guest memory reservation failed (Linux 64-bit required)");return rt;
+        m8rt_fail(rt,"fixed guest memory reservation failed (64-bit Linux or macOS required)");return rt;
     }
     if(map_buffer(rt,&rt->memory.itcm,0,512*1024,UC_PROT_ALL) || map_buffer(rt,&rt->memory.dtcm,0x20000000,512*1024,UC_PROT_READ|UC_PROT_WRITE) || map_buffer(rt,&rt->memory.ocram,0x20200000,512*1024,UC_PROT_READ|UC_PROT_WRITE) || map_buffer(rt,&rt->memory.flash,0x60000000,8*1024*1024,UC_PROT_ALL)) { m8rt_fail(rt,"RAM map failed"); return rt; }
     m8_region rom={0},dwt={0};
@@ -1076,7 +1076,7 @@ void m8rt_destroy(m8rt *rt) {
     if(rt->uc) uc_close(rt->uc);
     m8rt_sd_destroy(rt);m8rt_usb_destroy(rt);m8rt_nor_destroy(rt);m8rt_mmio_destroy(rt);
     if(rt->memory_reservation) {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
         munmap(rt->memory_reservation,rt->memory_reservation_size);
 #endif
     } else {

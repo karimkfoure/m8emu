@@ -29,11 +29,11 @@ static char *library_path(const char *selected) {
     const char *environment=SDL_getenv("M8RT_NATIVE_BOOT_LIBRARY");
     if(environment) return SDL_strdup(environment);
     const char *base=SDL_GetBasePath();char *bundled=NULL;
-    if(!base || SDL_asprintf(&bundled,"%slib/libm8native-boot.so",base)<0) return NULL;
+    if(!base || SDL_asprintf(&bundled,"%slib/libm8native-boot" M8_LIBRARY_SUFFIX,base)<0) return NULL;
     SDL_PathInfo info;
     if(SDL_GetPathInfo(bundled,&info) && info.type==SDL_PATHTYPE_FILE) return bundled;
     char *portable=NULL;
-    if(SDL_asprintf(&portable,"%slibs.aarch64/libm8native-boot.so",base)>=0 &&
+    if(SDL_asprintf(&portable,"%slibs.aarch64/libm8native-boot" M8_LIBRARY_SUFFIX,base)>=0 &&
        SDL_GetPathInfo(portable,&info) && info.type==SDL_PATHTYPE_FILE) {
         SDL_free(bundled);return portable;
     }

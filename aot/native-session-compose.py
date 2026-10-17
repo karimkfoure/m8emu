@@ -152,7 +152,7 @@ def namespace_source(source, kind, chain_header=None, event_header=None):
     definitions = list(FUNCTION.finditer(masked))
     if not definitions:
         raise ValueError("No generated function definitions found")
-    attribute = f'__attribute__((section(".text.m8native.{kind}"))) '
+    attribute = f'M8_NATIVE_TEXT({kind}) '
     for match in reversed(definitions):
         result = result[:match.start()] + attribute + result[match.start():]
     # This strict inverse check includes all whitespace, literals and comments.
@@ -170,23 +170,23 @@ def namespace_source(source, kind, chain_header=None, event_header=None):
 
 WRAPPER = '''
 /* Public ABI. Results 0/1 preserve completed effects and never replay them. */
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 int m8_native_region_step(m8_cpu *cpu,m8_mem *mem,m8_native_arch *arch) {
     int result=m8_session_hot_m8_native_region_step(cpu,mem,arch);
     if(result!=2) return result;
     return m8_session_cold_m8_native_region_step(cpu,mem,arch);
 }
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 int m8_native_region_verify_memory(m8_mem *mem,uint32_t *bad_pc) {
     int result=m8_session_hot_m8_native_region_verify_memory(mem,bad_pc);
     if(result) return result;
     return m8_session_cold_m8_native_region_verify_memory(mem,bad_pc);
 }
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 size_t m8_native_region_chain_cache_slots(void) {
     return m8_session_hot_m8_native_region_chain_cache_slots();
 }
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 int m8_native_region_chain(m8_cpu *cpu,m8_mem *mem,m8_native_arch *arch,m8_native_chain *chain) {
     int result=m8_session_hot_m8_native_region_chain(cpu,mem,arch,chain);
     if(result!=2) return result;
@@ -207,7 +207,7 @@ int m8_native_region_chain(m8_cpu *cpu,m8_mem *mem,m8_native_arch *arch,m8_nativ
 '''
 
 RAM_WRAPPER = '''
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 int m8_native_region_ram_exclusives(void) {
     return m8_session_hot_m8_native_region_ram_exclusives() &&
            m8_session_cold_m8_native_region_ram_exclusives();
@@ -234,11 +234,11 @@ static int m8_session_event_step(m8_cpu *cpu,m8_mem *mem,m8_native_arch *arch) {
     if(result==0) {context->cold_steps++;context->cold_guest+=arch->last_executed;}
     return result;
 }
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 int m8_native_region_event_loop(void) {
     return m8_session_hot_m8_native_region_event_loop();
 }
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 int m8_native_region_event_chain(m8_cpu *cpu,m8_mem *mem,m8_native_arch *arch,
                                  m8_native_chain *chain,m8_native_events *events) {
     if(!events || !events->step) return 2;
@@ -283,7 +283,7 @@ def features(hot_source, cold_source, hot, cold):
 def public_wrapper(selected):
     return WRAPPER + (RAM_WRAPPER if selected["ram_exclusives"] else "") + (
         EVENT_WRAPPER if selected["event_loop"] else "") + (
-        '__attribute__((section(".text.m8native.entry")))\n'
+        'M8_NATIVE_TEXT(entry)\n'
         'int m8_native_region_inline_services(void) {return 1;}\n'
         if selected.get("inline_services") else "")
 

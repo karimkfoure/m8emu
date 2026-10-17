@@ -71,7 +71,7 @@ def wrapper_source(inline_services=False, selected=None):
 int m8_session_cold_m8_native_region_inline_services(void);
 '''
         marker = '''
-__attribute__((section(".text.m8native.entry")))
+M8_NATIVE_TEXT(entry)
 int m8_native_region_inline_services(void) {
     return m8_session_hot_m8_native_region_inline_services() &&
            m8_session_cold_m8_native_region_inline_services();

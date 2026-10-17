@@ -2,6 +2,13 @@
 #define M8_HOST_AOT_H
 #include "m8rt.h"
 
+/* Bundled runtime libraries use the host's shared-library suffix. */
+#if defined(__APPLE__)
+#define M8_LIBRARY_SUFFIX ".dylib"
+#else
+#define M8_LIBRARY_SUFFIX ".so"
+#endif
+
 typedef struct m8_host_aot m8_host_aot;
 typedef struct m8_host_aot_stats {
     uint64_t calls, native_ns, hook_ns, runtime_ns;

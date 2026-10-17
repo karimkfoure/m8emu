@@ -1,5 +1,6 @@
 #include "audio.h"
 #include "audio_clock.h"
+#include "thread_policy.h"
 #include <SDL3/SDL.h>
 #include <stdatomic.h>
 #include <stdlib.h>
@@ -112,6 +113,9 @@ static void SDLCALL input_callback(void *userdata, SDL_AudioStream *stream,
 
 static int simulate(void *userdata) {
     m8live_audio *a = userdata;
+    /* Device callbacks run at real-time priority; late simulated wakeups
+     * would otherwise drain the ring in bursts and report false shortages. */
+    m8_thread_policy_interactive(NULL, 0);
     uint64_t start = monotonic_ns(), consumed = 0;
     while (!atomic_load(&a->simulation_stop)) {
         uint64_t next = start + (consumed + 128) * 1000000000 / 44100;

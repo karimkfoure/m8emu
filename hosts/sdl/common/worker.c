@@ -2,6 +2,7 @@
 #include "native.h"
 #include "queue.h"
 #include "storage.h"
+#include "thread_policy.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,6 +161,7 @@ static int run(void *context) {
     m8_session *s = w->s;
     int measuring = 0;
     s->display = display; s->input = input; s->transport = w;
+    if (m8_thread_policy_interactive(s->error, sizeof s->error)) { fail(w, s->error); goto done; }
     if (w->options.session_script) {
         if (m8_session_script_run(s, w->options.session_script, w->options.session_output,
                                   &w->stop, &w->script) < 0) fail(w, s->error);

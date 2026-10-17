@@ -5,6 +5,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+/* Hot/cold/entry text placement. Mach-O names a segment and a short section. */
+#if defined(__APPLE__)
+#define M8_NATIVE_TEXT(kind) __attribute__((section("__TEXT,__m8n_" #kind ",regular,pure_instructions")))
+#else
+#define M8_NATIVE_TEXT(kind) __attribute__((section(".text.m8native." #kind)))
+#endif
+
 enum {
     M8_NATIVE_EXIT_STATIC=1, M8_NATIVE_EXIT_FALLTHROUGH,
     M8_NATIVE_EXIT_REDIRECT, M8_NATIVE_EXIT_BUDGET, M8_NATIVE_EXIT_MEMORY,

@@ -20,6 +20,12 @@ endif()
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# Mach-O resolves @loader_path where ELF resolves $ORIGIN.
+if(APPLE)
+    set(M8_RPATH_ORIGIN "@loader_path")
+else()
+    set(M8_RPATH_ORIGIN "$ORIGIN")
+endif()
 option(BUILD_SHARED_LIBS "Build shared runtime libraries" ON)
 option(M8_BUILD_AOT "Build the original-firmware DSP AOT library" OFF)
 option(M8_AOT_AUDIO_POOL "Use default-off exact integer audio-buffer pool kernels" OFF)
@@ -43,14 +49,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P EQUAL 8 AND
 endif()
 option(M8_NATIVE_TLS_INITIAL_EXEC "Use static TLS access in native playback libraries" ${M8_NATIVE_TLS_INITIAL_EXEC_DEFAULT})
 set(M8_NATIVE_DEVICE_FAST_DEFAULT OFF)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|Darwin)$" AND
         CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$" AND
         M8_NATIVE_ENGINE AND M8_AOT_CODEGEN_V2)
     set(M8_NATIVE_DEVICE_FAST_DEFAULT ON)
 endif()
 option(M8_NATIVE_DEVICE_FAST "Use qualified native device callbacks" ${M8_NATIVE_DEVICE_FAST_DEFAULT})
 set(M8_AOT_ARM64_FP_HARDWARE_DEFAULT OFF)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|Darwin)$" AND
         CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$" AND
         M8_NATIVE_ENGINE AND M8_AOT_CODEGEN_V2)
     set(M8_AOT_ARM64_FP_HARDWARE_DEFAULT ON)
@@ -71,7 +77,7 @@ option(M8_NATIVE_REGION_INLINE_SERVICES "Compile exact barriers and RAM exclusiv
 option(M8_NATIVE_REGION_RAM_EXCLUSIVES "Compile RAM word exclusives without inline barriers or prefetch" OFF)
 option(M8_NATIVE_REGION_EVENT_LOOP "Run exact scheduling and IRQ boundaries in native region chains" OFF)
 set(M8_NATIVE_REGION_SHARED_STATE_DEFAULT OFF)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|Darwin)$" AND
         CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$" AND
         M8_NATIVE_ENGINE AND M8_AOT_CODEGEN_V2)
     set(M8_NATIVE_REGION_SHARED_STATE_DEFAULT ON)
@@ -158,6 +164,14 @@ endif()
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/unicorn/CMakeLists.txt")
     message(FATAL_ERROR "Initialize the engine: git submodule update --init third_party/unicorn")
 endif()
+# Unicorn builds a universal macOS library unless ARCHFLAGS names one slice.
+if(APPLE AND NOT DEFINED ENV{ARCHFLAGS})
+    if(CMAKE_OSX_ARCHITECTURES MATCHES "^(arm64|x86_64)$")
+        set(ENV{ARCHFLAGS} "-arch ${CMAKE_OSX_ARCHITECTURES}")
+    elseif(NOT CMAKE_OSX_ARCHITECTURES AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "^(arm64|x86_64)$")
+        set(ENV{ARCHFLAGS} "-arch ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    endif()
+endif()
 # Match the corrected engine: ARM guest only, without tests or tracing.
 set(UNICORN_ARCH arm CACHE STRING "Unicorn guest architectures" FORCE)
 set(UNICORN_BUILD_TESTS OFF CACHE BOOL "Build Unicorn tests" FORCE)
@@ -187,6 +201,10 @@ foreach(engine_target unicorn unicorn_static unicorn-common arm-softmmu)
     endif()
 endforeach()
 m8_unicorn_cold_sources()
+if(APPLE)
+    # _POSIX_C_SOURCE hides flock, O_NOFOLLOW and BSD stat fields on Darwin.
+    add_compile_definitions(_DARWIN_C_SOURCE)
+endif()
 set(m8_runtime_engine unicorn)
 set(m8_test_engine unicorn)
 if(M8_COMBINED_RUNTIME)
@@ -519,12 +537,12 @@ set_target_properties(m8rt PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/m8rt"
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/m8rt"
     BUILD_RPATH_USE_ORIGIN ON
-    INSTALL_RPATH "$ORIGIN/../unicorn")
+    INSTALL_RPATH "${M8_RPATH_ORIGIN}/../unicorn")
 add_executable(m8rt-cli ${M8RT_SOURCE_DIR}/cli.c)
 target_link_libraries(m8rt-cli PRIVATE m8rt)
 set_target_properties(m8rt-cli PROPERTIES
     OUTPUT_NAME m8rt RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/m8rt"
-    BUILD_RPATH_USE_ORIGIN ON INSTALL_RPATH "$ORIGIN")
+    BUILD_RPATH_USE_ORIGIN ON INSTALL_RPATH "${M8_RPATH_ORIGIN}")
 
 if(M8_BUILD_AOT)
     set(M8_AOT_SOURCE ""
@@ -886,7 +904,7 @@ if(M8_BUILD_BENCH AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmark/m8-bench.c")
     set_target_properties(m8-bench PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         BUILD_RPATH_USE_ORIGIN ON
-        INSTALL_RPATH "$ORIGIN/../m8rt")
+        INSTALL_RPATH "${M8_RPATH_ORIGIN}/../m8rt")
     if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmark")
         add_executable(m8-playback-contract-test benchmark/test_playback_contract.c benchmark/playback-contract.c)
         target_link_libraries(m8-playback-contract-test PRIVATE m)
@@ -1030,7 +1048,7 @@ endif()
 if(M8_PORTABLE_BUNDLE)
     foreach(m8_bundle_target IN ITEMS m8rt unicorn m8aot m8native-regions m8native-step m8native-boot)
         if(TARGET ${m8_bundle_target})
-            set_target_properties(${m8_bundle_target} PROPERTIES BUILD_WITH_INSTALL_RPATH ON INSTALL_RPATH "$ORIGIN")
+            set_target_properties(${m8_bundle_target} PROPERTIES BUILD_WITH_INSTALL_RPATH ON INSTALL_RPATH "${M8_RPATH_ORIGIN}")
         endif()
     endforeach()
 endif()

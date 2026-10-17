@@ -60,6 +60,22 @@
       }
     },
     {
+      "name": "macos-dev",
+      "inherits": "native-base",
+      "displayName": "macOS Apple Silicon without PGO",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "M8_PGO": "OFF",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "M8_NATIVE_TLS_INITIAL_EXEC": "OFF"
+      }
+    },
+    {
       "name": "handheld-arm64",
       "inherits": "native-base",
       "displayName": "Portable ARM64 with QEMU-trained PGO",
@@ -84,6 +100,10 @@
       "name": "linux-dev",
       "configurePreset": "linux-dev",
       "jobs": 2
+    },
+    {
+      "name": "macos-dev",
+      "configurePreset": "macos-dev"
     },
     {
       "name": "handheld-arm64",

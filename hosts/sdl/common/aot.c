@@ -39,7 +39,7 @@ m8_host_aot *m8_host_aot_preload(const char *path, char *error, size_t error_cap
             const char *directories[] = {"lib", "libs.aarch64"};
             for (unsigned i = 0; base && i < sizeof directories/sizeof directories[0]; ++i) {
                 SDL_free(bundled); bundled = NULL;
-                if (SDL_asprintf(&bundled, "%s%s/libm8aot.so", base, directories[i]) >= 0 &&
+                if (SDL_asprintf(&bundled, "%s%s/libm8aot" M8_LIBRARY_SUFFIX, base, directories[i]) >= 0 &&
                     SDL_GetPathInfo(bundled, &info) && info.type == SDL_PATHTYPE_FILE) {
                     path = bundled;
                     break;

@@ -13,6 +13,11 @@
 static cpu_set_t initial_allowed;
 static int initial_saved;
 #endif
+#ifdef __APPLE__
+#include <pthread.h>
+#include <pthread/qos.h>
+#include <string.h>
+#endif
 
 static int fail(char *error, size_t capacity, const char *format, ...)
 {
@@ -93,4 +98,15 @@ int m8_thread_policy_bind(const char *cpus, char *error, size_t capacity)
                 "first=cpu_affinity_supported platform=non_linux cpus_present=%u",
                 cpus != NULL);
 #endif
+}
+
+int m8_thread_policy_interactive(char *error, size_t capacity)
+{
+    if (error && capacity) *error = 0;
+#ifdef __APPLE__
+    int rc = pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+    if (rc)
+        return fail(error, capacity, "first=thread_qos_apply errno=%d: %s", rc, strerror(rc));
+#endif
+    return 0;
 }

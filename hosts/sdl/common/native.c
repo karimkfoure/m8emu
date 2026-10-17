@@ -129,8 +129,8 @@ m8_host_native *m8_host_native_preload(int enabled, const char *step_path,
         goto failed;
     }
     if (m8_host_aot_native_contract(aot, &native->config.verify, error, capacity)) goto failed;
-    native->step_path = path(step_path, "M8RT_NATIVE_LIBRARY", "libm8native-step.so");
-    native->region_path = path(region_path, "M8RT_NATIVE_REGIONS", "libm8native-regions.so");
+    native->step_path = path(step_path, "M8RT_NATIVE_LIBRARY", "libm8native-step" M8_LIBRARY_SUFFIX);
+    native->region_path = path(region_path, "M8RT_NATIVE_REGIONS", "libm8native-regions" M8_LIBRARY_SUFFIX);
     if (!native->step_path || !*native->step_path || !native->region_path || !*native->region_path) {
         fail(error, capacity, "Native switching requires instruction and region library paths");
         goto failed;

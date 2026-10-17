@@ -24,6 +24,13 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   endif()
   find_package(SDL3 REQUIRED CONFIG HINTS "${M8_SDL_PREFIX}/lib/cmake/SDL3")
 endif()
+if(NOT DEFINED M8_RPATH_ORIGIN)
+  if(APPLE)
+    set(M8_RPATH_ORIGIN "@loader_path")
+  else()
+    set(M8_RPATH_ORIGIN "$ORIGIN")
+  endif()
+endif()
 set(M8RT "${M8_ROOT}/core/machine")
 set(M8C "${M8_ROOT}/third_party/m8c/src")
 set(COMMON "${M8_ROOT}/hosts/sdl/common")
@@ -44,6 +51,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND M8_NATIVE_APP_DEFAULT AND
     CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
   set(m8_native_audio_queue_default 150)
   set(m8_native_poll_default 20)
+elseif(APPLE AND M8_NATIVE_APP_DEFAULT AND
+    CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|ARM64)$")
+  # Apple Silicon keeps the guest well ahead of real time. A 12 ms ring had
+  # no simulated-consumer shortages for the generated demo; 10 ms did.
+  set(m8_native_audio_queue_default 12)
 endif()
 set(M8_NATIVE_AUDIO_QUEUE_MS ${m8_native_audio_queue_default} CACHE STRING "Default host audio ring size in milliseconds")
 if(NOT M8_NATIVE_AUDIO_QUEUE_MS MATCHES "^[0-9]+$" OR
@@ -133,7 +145,7 @@ add_custom_command(TARGET m8emu POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:m8emu>/firmware"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${M8_FIRMWARE_BIN}" "$<TARGET_FILE_DIR:m8emu>/firmware/M8_V6_5_2C_HEADLESS.bin")
 if(M8_PORTABLE_BUNDLE)
-  set_target_properties(m8emu PROPERTIES BUILD_WITH_INSTALL_RPATH ON INSTALL_RPATH "$ORIGIN/lib")
+  set_target_properties(m8emu PROPERTIES BUILD_WITH_INSTALL_RPATH ON INSTALL_RPATH "${M8_RPATH_ORIGIN}/lib")
 endif()
 if(EXISTS "${M8_ROOT}/benchmark")
   add_custom_target(m8-native DEPENDS m8emu)
@@ -149,7 +161,7 @@ set_target_properties(m8emu PROPERTIES BUILD_RPATH_USE_ORIGIN ON)
 # The engine's existing relative runtime path is preserved by the bundle layout.
 if(CMAKE_CROSSCOMPILING AND M8_RUNTIME_LIBRARY)
   set_target_properties(m8emu PROPERTIES
-    BUILD_WITH_INSTALL_RPATH ON INSTALL_RPATH "$ORIGIN/lib")
+    BUILD_WITH_INSTALL_RPATH ON INSTALL_RPATH "${M8_RPATH_ORIGIN}/lib")
   if(UNIX AND M8_UNICORN_LIBRARY)
     get_filename_component(m8_engine_dir "${M8_UNICORN_LIBRARY}" DIRECTORY)
     target_link_options(m8emu PRIVATE "LINKER:-rpath-link,${m8_engine_dir}")
@@ -191,7 +203,8 @@ endif()
 add_test(NAME native_app_policy COMMAND test_native_policy
   $<TARGET_FILE:native_policy_good> $<TARGET_FILE:native_policy_bad_step> $<TARGET_FILE:native_policy_bad_region>)
 set_tests_properties(native_app_policy PROPERTIES TIMEOUT 30)
-add_executable(test_audio ${M8_HOST_TEST_DIR}/test_audio.c ${COMMON}/audio.c ${COMMON}/audio_clock_sdl.c)
+add_executable(test_audio ${M8_HOST_TEST_DIR}/test_audio.c ${COMMON}/audio.c ${COMMON}/audio_clock_sdl.c
+  ${PLATFORM}/thread_policy.c)
 target_include_directories(test_audio PRIVATE ${COMMON})
 target_link_libraries(test_audio PRIVATE SDL3::SDL3)
 target_compile_options(test_audio PRIVATE $<$<NOT:$<C_COMPILER_ID:MSVC>>:-UNDEBUG>)
@@ -272,10 +285,16 @@ if(M8_PORTABLE_BUNDLE AND TARGET m8emu)
     add_dependencies(m8emu m8aot m8native-regions m8native-step)
     add_custom_command(TARGET m8emu POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/lib"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8rt>" "${CMAKE_BINARY_DIR}/lib/libm8rt.so"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:unicorn>" "${CMAKE_BINARY_DIR}/lib/libunicorn.so.2"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8aot>" "${CMAKE_BINARY_DIR}/lib/libm8aot.so"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8native-regions>" "${CMAKE_BINARY_DIR}/lib/libm8native-regions.so"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8native-step>" "${CMAKE_BINARY_DIR}/lib/libm8native-step.so"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "${CMAKE_BINARY_DIR}/lib/libSDL3.so.0")
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8rt>" "${CMAKE_BINARY_DIR}/lib/$<TARGET_SONAME_FILE_NAME:m8rt>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:unicorn>" "${CMAKE_BINARY_DIR}/lib/$<TARGET_SONAME_FILE_NAME:unicorn>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8aot>" "${CMAKE_BINARY_DIR}/lib/$<TARGET_FILE_NAME:m8aot>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8native-regions>" "${CMAKE_BINARY_DIR}/lib/$<TARGET_FILE_NAME:m8native-regions>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:m8native-step>" "${CMAKE_BINARY_DIR}/lib/$<TARGET_FILE_NAME:m8native-step>")
+    get_target_property(m8_sdl_imported SDL3::SDL3 IMPORTED)
+    # An installed macOS SDL3 records its absolute install name; only a
+    # fetched build resolves through the bundle's @rpath.
+    if(NOT APPLE OR NOT m8_sdl_imported)
+        add_custom_command(TARGET m8emu POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "${CMAKE_BINARY_DIR}/lib/$<TARGET_SONAME_FILE_NAME:SDL3::SDL3>")
+    endif()
 endif()
