@@ -75,6 +75,12 @@ typedef struct pcm_capture {
 #define M8_NATIVE_POLL_MS 1
 #endif
 #define M8_STRING_VALUE_(value) #value
+/* The Core Audio HAL unit honors short device periods. */
+#if defined(__APPLE__)
+#define M8_AUDIO_FRAMES_DEFAULT 128
+#else
+#define M8_AUDIO_FRAMES_DEFAULT 256
+#endif
 #define M8_STRING_VALUE(value) M8_STRING_VALUE_(value)
 static void usage(void) {
     puts("m8emu [--firmware PATH] [--card PATH | --image PATH | --demo simple]\n"
@@ -91,7 +97,7 @@ static void usage(void) {
          "  --expect-silence       Check a loaded idle project for zero PCM\n"
          "  --fps N                Maximum display updates, 10..120 (default: 60)\n"
          "  --poll-ms N            Main-thread sleep, 1..20 ms (default: " M8_STRING_VALUE(M8_NATIVE_POLL_MS) ")\n"
-         "  --audio-frames N       SDL period hint, 64..4096 (default: 256)\n"
+         "  --audio-frames N       Audio period hint, 64..4096 (default: " M8_STRING_VALUE(M8_AUDIO_FRAMES_DEFAULT) ")\n"
          "  --guest-cpu N          Linux guest-thread CPU; default: scheduler\n"
          "  --profile-hz N         Guest-thread PC samples, 0..10000 (default: off)\n"
          "  --host-pmu             Guest-thread hardware counters (Linux)\n"
@@ -139,7 +145,7 @@ static double number(const char *s) {
     return errno || end == s || *end || !isfinite(value) ? -1 : value;
 }
 static int parse(int argc, char **argv, options *o) {
-    *o = (options){.firmware=M8_DEFAULT_FIRMWARE, .seconds=-1, .queue_ms=M8_NATIVE_AUDIO_QUEUE_MS, .slice_us=3000, .fps=60, .display_kib=256, .poll_ms=M8_NATIVE_POLL_MS, .audio_frames=256, .native_engine=-1, .native_boot=-1, .vsync=-1};
+    *o = (options){.firmware=M8_DEFAULT_FIRMWARE, .seconds=-1, .queue_ms=M8_NATIVE_AUDIO_QUEUE_MS, .slice_us=3000, .fps=60, .display_kib=256, .poll_ms=M8_NATIVE_POLL_MS, .audio_frames=M8_AUDIO_FRAMES_DEFAULT, .native_engine=-1, .native_boot=-1, .vsync=-1};
     unsigned media = 0;
     for (int i = 1; i < argc; ++i) {
         const char *a = argv[i];
@@ -576,7 +582,7 @@ int main(int argc, char **argv) {
     char audio_hint[16];
     snprintf(audio_hint, sizeof audio_hint, "%u", o.audio_frames);
     SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, audio_hint,
-                           o.audio_frames == 256 ? SDL_HINT_DEFAULT : SDL_HINT_OVERRIDE);
+                           o.audio_frames == M8_AUDIO_FRAMES_DEFAULT ? SDL_HINT_DEFAULT : SDL_HINT_OVERRIDE);
     printf("host_cpus=%s guest_cpu=%s fps=%u poll_ms=%u audio_frames_hint=%u slice_us=%u\n",
            o.host_cpus ? o.host_cpus : "scheduler", o.guest_cpu ? o.guest_cpu : "scheduler",
            o.fps, o.poll_ms, o.audio_frames, o.slice_us);
