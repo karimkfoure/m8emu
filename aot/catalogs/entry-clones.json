@@ -1,0 +1,60 @@
+{
+  "schema": "m8-web-entry-clones/1",
+  "name_prefix": "m8_entry_",
+  "provenance": {
+    "note": "Secondary guest-PC selections are ranked by entry frequency x function size over exact per-call entry histograms on the 19 curated projects; top entries while marginal score share stays >= threshold. Normal entries already run through the product normal-ABI body and need no clone.",
+    "profile": "hosts/web/entry_clone_profile.json",
+    "profile_sha256": "0b7727c74d614fa7ef1295432b984b6a9eb5a46014e6bdcf3e2d09e497d3f411",
+    "selector": "tools/web_entry_clones_select.py",
+    "threshold": 0.005,
+    "dropped_roots": [],
+    "selected_entries": 24,
+    "selected_roots": 9,
+    "covered_score_share": 0.9161496886517593,
+    "ranked_secondaries": 95
+  },
+  "roots": {
+    "13fd8": [
+      "14322",
+      "14324",
+      "1434e",
+      "14350"
+    ],
+    "1991c": [
+      "19a78",
+      "19a7a",
+      "19b00",
+      "19b02"
+    ],
+    "1caa8": [
+      "1d100",
+      "1d102",
+      "1d130",
+      "1d132",
+      "1d362",
+      "1d364"
+    ],
+    "20628": [
+      "20aa4",
+      "20aa6"
+    ],
+    "251c0": [
+      "2537c",
+      "25380"
+    ],
+    "32bf8": [
+      "32c06",
+      "32c70"
+    ],
+    "34848": [
+      "3489a"
+    ],
+    "35abc": [
+      "35b74",
+      "35b78"
+    ],
+    "4968": [
+      "4ff0"
+    ]
+  }
+}

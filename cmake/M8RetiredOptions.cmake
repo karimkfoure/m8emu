@@ -1,0 +1,41 @@
+# Reject stale enabled cache entries rather than silently build another mode.
+# Recovery commits and measured decisions are in docs/performance-options.md.
+set(m8_retired_performance_options
+    M8_ACCESS_PROFILE
+    M8_AOT_DSP_LIFT
+    M8_BOLT_CURATED_ONLY
+    M8_GUEST_PC_PROFILE
+    M8_LOW_MEMORY_BUILD
+    M8_NATIVE_BOOT_SESSION_COMPOSE
+    M8_NATIVE_DEVICE_SITE_PROFILE
+    M8_NATIVE_LLVM_COALESCE
+    M8_WEB_NATIVE_CODEGEN_V2
+    M8_WEB_NATIVE_DIAGNOSTIC
+    M8_WEB_NATIVE_DISABLE_DSP_KERNELS
+    M8_WEB_NATIVE_FP_BOUNDARY
+    M8_WEB_NATIVE_GUEST_C_ABI
+    M8_WEB_NATIVE_HARDWARE_FP
+    M8_WEB_NATIVE_LOOKUP_JUMP_TABLES
+    M8_WEB_NATIVE_SKIP_PERFORMANCE_SOURCE
+    M8_WEB_UI_ONLY
+    M8_COMBINED_RUNTIME M8_COMBINED_TEXT_ORDER_FILE
+    M8_UNICORN_COLD_SOURCES_FILE M8_UNICORN_COLD_OPT_LEVEL
+    M8_AOT_CODEGEN_V3 M8_AOT_STACK_MEMORY M8_NATIVE_DEVICE_OUTLINE
+    M8_NATIVE_SD_STREAM M8_AOT_FASTMEM M8_AOT_WAV_BATCH
+    M8_AOT_WAVE_SAMPLE_REGION M8_AOT_FP_CALLBACK_GROUPS
+    M8_AOT_NARROW_CALLBACKS M8_AOT_SCALAR_BYTE_CALLBACKS
+    M8_AOT_F32_RTZ M8_AOT_F32_CMP M8_AOT_FLOAT_NAN_REPAIR
+    M8_AOT_STATIC_COLD_PARTITION M8_AOT_NO_JUMP_THREADING
+    M8_AOT_AUTO_POINTEE_SPANS M8_AOT_VECTOR_BUFFERS
+    M8_AOT_FM_GROUPED_OWNERS M8_AOT_FM_LOCAL_STATE M8_AOT_FM_STABLE_GUARDS
+    M8_AOT_ENTRY_SEEDS M8_AOT_LOCAL_TABLE_DISPATCH M8_AOT_CANONICAL_MEMORY
+    M8_AOT_FLOAT_OPERANDS M8_AOT_OVERFLOW_BUILTINS
+    M8_AOT_SELECTIVE_NO_JUMP_THREADING)
+foreach(m8_retired_option IN LISTS m8_retired_performance_options)
+    if(DEFINED ${m8_retired_option} AND ${m8_retired_option})
+        message(FATAL_ERROR
+            "Retired performance option ${m8_retired_option} is enabled. Remove this cache entry or use a fresh build directory. See docs/performance-options.md; use the listed recovery commit.")
+    endif()
+endforeach()
+unset(m8_retired_option)
+unset(m8_retired_performance_options)

@@ -1,0 +1,28 @@
+# firmware_sha256=20498b7637cee17baae249372db3b8377afd4e12a5e7062754c2ddd83621367f
+# Hardware-only cold-boot scan at 0x32220 and its sibling init paths.
+# The inner loop (0x32236 cmp, 0x32238 uxth, 0x3223a bhs) iterates only when a
+# scanned halfword differs from 0xFFFF. All retained QEMU/x86 runs exit on the
+# first check, so no profile, union list or handler manifest contains these
+# starts; the physical Pi dies at pc=00032236 without them. The F3 entry
+# (0x32264), its 0x322ca call into the scan, the 0x322d0 early-exit stub and
+# the sibling 0x322d4 init entry are likewise unobserved yet reachable on
+# hardware. Every row below is a verified Thumb instruction start; the
+# generator byte-checks each one. 0x322c2 needs no row: the covered
+# `it eq` at 0x322c0 already pulls in its member.
+0x00032236
+0x00032238
+0x0003223a
+0x00032264
+0x00032266
+0x000322ca
+0x000322ce
+0x000322d0
+0x000322d2
+0x000322d4
+0x000322d6
+0x000322d8
+0x000322da
+0x000322dc
+0x000322de
+0x000322e0
+0x000322e2

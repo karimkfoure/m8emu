@@ -1,0 +1,14 @@
+{
+  "schema": "m8-native-catalog/1",
+  "firmware_sha256": "20498b7637cee17baae249372db3b8377afd4e12a5e7062754c2ddd83621367f",
+  "files": {
+    "corpus/baseline-cold.txt": "7818f2978641b5fe7755f203a68a1fc1ff6c93e4b5f36c2ac97727708aaa5c79",
+    "corpus/handlers-complete.txt": "882f59283b67701bf6d085dfdc017de9d6c84a705232d6ad8bb588496c7f9dab",
+    "corpus/layout.json": "11cea93008926cf5056b2a86eb86c4eabf753934990fb0cd2b1020a10e598c0f",
+    "corpus/playback.txt": "2eda32adc3ce3f16a9396011f72d855bc8de995dcb67d9e4968cb7425e2f8bf6",
+    "redirect-targets-services.txt": "3df59b159954b4dcca7c534f08712865bb6611c849cab10b166422055fac9cb8",
+    "redirect-targets.txt": "aba91892e33f0eceb8bf89531de5a392e42eba391c88b5cdc0208e1fb9211eb1",
+    "session-pcs.txt": "222d3285b8566e87e4815423aa39063b6fa6e750ba5071e7d552b833d31e871a",
+    "pgo-scope.json": "b7a102c67fcc00cfc010fe59c85f09f72bb09b0400d43330aeada0a06aea8763"
+  }
+}

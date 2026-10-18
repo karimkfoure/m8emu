@@ -1,0 +1,47 @@
+{
+  "schema": "m8-static-coverage-input/1",
+  "firmware_sha256": "20498b7637cee17baae249372db3b8377afd4e12a5e7062754c2ddd83621367f",
+  "flash_base": "0x60000000",
+  "reset_words": ["0x60001004"],
+  "copied_maps": [
+    {
+      "name": "boot-itcm",
+      "source": "0x601809e4",
+      "destination": "0x00000000",
+      "size": "0x3d5d8",
+      "executable": true,
+      "guards": [
+        {"address": "0x60005bc4", "bytes": "d8d50300e409186000000000"},
+        {"address": "0x600059dc", "bytes": "51f8043b40f8043b8242f9d8"}
+      ]
+    },
+    {
+      "name": "boot-dtcm-data",
+      "source": "0x601bdfc0",
+      "destination": "0x20000000",
+      "size": "0xc2c0",
+      "executable": false,
+      "guards": [{"address": "0x60005bd0", "bytes": "c0c20020c0df1b6000000020"}]
+    }
+  ],
+  "vector_tables": [],
+  "pointer_scan": true,
+  "function_files": ["aot/functions*.txt"],
+  "observed_pc_files": [
+    "aot/catalogs/corpus/*.txt",
+    "aot/catalogs/session-pcs.txt",
+    "aot/functions-playback-native*-pcs.txt",
+    "aot/catalogs/static/retained.pcs.txt",
+    "aot/catalogs/static/cold-boot-hw-scan.pcs.txt"
+  ],
+  "boot_weight_files": ["aot/catalogs/static/boot.pcs.txt"],
+  "provenance_files": ["aot/catalogs/static/origins.json"],
+  "hot_pc_files": [
+    "aot/functions-playback-native-pcs.txt",
+    "aot/functions-playback-native-groove-pcs.txt",
+    "aot/catalogs/session-pcs.txt",
+    "aot/catalogs/corpus/playback.txt",
+    "aot/catalogs/corpus/baseline-cold.txt",
+    "aot/catalogs/corpus/handlers-complete.txt"
+  ]
+}

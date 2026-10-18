@@ -1,0 +1,8 @@
+# Optional original callback closure for Headless 6.5.2C.
+# Firmware SHA-256: 20498b7637cee17baae249372db3b8377afd4e12a5e7062754c2ddd83621367f.
+# These bounds add native callees only; the existing outer hooks stay unchanged.
+# FM playback reaches these targets from the per-sample calls at 0x1434e and
+# 0x14322. Closing them avoids the caller's return to the native region engine.
+0x00001fec 0x00002070 # original shaping callback; both BX LR returns included
+0x00002284 0x00002294 # scaled shaping callback; tail-calls existing 0x36d04
+# The 0x2284 closure requires 0x36d04 from functions-coverage.txt.

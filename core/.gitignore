@@ -1,0 +1,9 @@
+*.o
+/machine/.unicorn-library
+/machine/libm8rt.so
+/machine/m8rt
+/machine/test_core
+/machine/test_usb
+/machine/test_usb_services
+/machine/test_watchdog
+/machine/test_nor

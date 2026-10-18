@@ -1,0 +1,199 @@
+{
+  "schema": "m8-arm64-sysroot-packages/1",
+  "release": "Debian10 buster archive",
+  "glibc": "2.28",
+  "maximum_glibc": "2.27",
+  "base_url": "https://archive.debian.org/debian/",
+  "index_sha256": "5384109c4b8ee015a5a913b150f7e07216af14eac5dc1d55e83deee2bb159b95",
+  "packages": [
+    {
+      "package": "libc6",
+      "version": "2.28-10+deb10u1",
+      "filename": "pool/main/g/glibc/libc6_2.28-10+deb10u1_arm64.deb",
+      "sha256": "09f5e92b1527cdc06b757499bb4d97ddf1b064fc3d163f978e5de18b131cd330",
+      "size": "2520708"
+    },
+    {
+      "package": "libc6-dev",
+      "version": "2.28-10+deb10u1",
+      "filename": "pool/main/g/glibc/libc6-dev_2.28-10+deb10u1_arm64.deb",
+      "sha256": "04097716018288cef8b82339faa1a9847838b89f39574b5b169f4657da8bf269",
+      "size": "2323448"
+    },
+    {
+      "package": "linux-libc-dev",
+      "version": "4.19.249-2",
+      "filename": "pool/main/l/linux/linux-libc-dev_4.19.249-2_arm64.deb",
+      "sha256": "e9a92d71d62655f673433c345a03fecaa4292f93c6572b28fd3d16dcfd1cc7f6",
+      "size": "1509868"
+    },
+    {
+      "package": "libgcc1",
+      "version": "1:8.3.0-6",
+      "filename": "pool/main/g/gcc-8/libgcc1_8.3.0-6_arm64.deb",
+      "sha256": "2851ac25d12958586c035de5ec4f2fc17272dec48f776dd0dd24c62f62674fd9",
+      "size": "34400"
+    },
+    {
+      "package": "libasound2",
+      "version": "1.1.8-1",
+      "filename": "pool/main/a/alsa-lib/libasound2_1.1.8-1_arm64.deb",
+      "sha256": "af663d07d10b085f590c539772dbf70b279df187210ea818446dfd896487adee",
+      "size": "333356"
+    },
+    {
+      "package": "libasound2-dev",
+      "version": "1.1.8-1",
+      "filename": "pool/main/a/alsa-lib/libasound2-dev_1.1.8-1_arm64.deb",
+      "sha256": "617ed035bd7caaab64c7f68e5b673bd60160eb536b9e7ca3c748cc9c46949ffe",
+      "size": "144564"
+    },
+    {
+      "package": "libdrm2",
+      "version": "2.4.97-1",
+      "filename": "pool/main/libd/libdrm/libdrm2_2.4.97-1_arm64.deb",
+      "sha256": "c1521eb6b63dc794e9487e6fd6956201b97fc230d514ccf5bf767111e0f86efb",
+      "size": "39512"
+    },
+    {
+      "package": "libdrm-dev",
+      "version": "2.4.97-1",
+      "filename": "pool/main/libd/libdrm/libdrm-dev_2.4.97-1_arm64.deb",
+      "sha256": "21bd19c7e4ad86898e3613f45683630f5f42cd696b978ebced0b93a1d943104a",
+      "size": "134804"
+    },
+    {
+      "package": "libgbm1",
+      "version": "18.3.6-2+deb10u1",
+      "filename": "pool/main/m/mesa/libgbm1_18.3.6-2+deb10u1_arm64.deb",
+      "sha256": "c9c9a3fbc0c7187f28f0ad71f459a3a364803326d2e9175e458b043aa392478c",
+      "size": "67136"
+    },
+    {
+      "package": "libgbm-dev",
+      "version": "18.3.6-2+deb10u1",
+      "filename": "pool/main/m/mesa/libgbm-dev_18.3.6-2+deb10u1_arm64.deb",
+      "sha256": "cc87a516b71e7260d50583f60baf91415c8253d5f27882c6e7f1d5fa379e6f75",
+      "size": "50728"
+    },
+    {
+      "package": "libglvnd-core-dev",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libglvnd-core-dev_1.1.0-1_arm64.deb",
+      "sha256": "c578d6967454e1a0555d319102480afbc54a5e6e4f16da92daea236fc6305597",
+      "size": "13172"
+    },
+    {
+      "package": "libegl1",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libegl1_1.1.0-1_arm64.deb",
+      "sha256": "7f8a09aeba00173c817955df9c143246422cbd65599038612cd8910d520d827b",
+      "size": "32848"
+    },
+    {
+      "package": "libgles2",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libgles2_1.1.0-1_arm64.deb",
+      "sha256": "b97d9afedf79d0cd39b11ab216c0f1a19475df0514e87846da3a07f731819229",
+      "size": "19812"
+    },
+    {
+      "package": "libglvnd0",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libglvnd0_1.1.0-1_arm64.deb",
+      "sha256": "13d2616b670c03bf0868e35903c53d805af0db236d55b81d7d3f026b85219076",
+      "size": "42440"
+    },
+    {
+      "package": "libwayland-server0",
+      "version": "1.16.0-1",
+      "filename": "pool/main/w/wayland/libwayland-server0_1.16.0-1_arm64.deb",
+      "sha256": "26b0676cc7471ec928b8ee5104543908ba7a8826687ba3c620457a0af128bc7d",
+      "size": "31780"
+    },
+    {
+      "package": "libffi6",
+      "version": "3.2.1-9",
+      "filename": "pool/main/libf/libffi/libffi6_3.2.1-9_arm64.deb",
+      "sha256": "c5f7f4158dc6821bf37dd44ce0fe4399b5798d4ae7e821ad85b63059a2b31c0f",
+      "size": "19340"
+    },
+    {
+      "package": "libexpat1",
+      "version": "2.2.6-2+deb10u4",
+      "filename": "pool/main/e/expat/libexpat1_2.2.6-2+deb10u4_arm64.deb",
+      "sha256": "35469262108a91a75d38fefb46e4bdf3f3b99351792a2c0f73339d2d53adb93d",
+      "size": "87088"
+    },
+    {
+      "package": "libgl1",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libgl1_1.1.0-1_arm64.deb",
+      "sha256": "34fa2679b16fb97c3aa5e4f9940c8f2f2c5dc0e470834c6a9e9d8a1789f7ee32",
+      "size": "92536"
+    },
+    {
+      "package": "libgles1",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libgles1_1.1.0-1_arm64.deb",
+      "sha256": "2ee51116a3a2088e1e584d7fbbbfe9ad62298030182e1c761068390cef6fc089",
+      "size": "14328"
+    },
+    {
+      "package": "libglvnd-dev",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libglvnd-dev_1.1.0-1_arm64.deb",
+      "sha256": "9fc82c30a8fc56a9228979f5af1659279cbb90ddca83614fee4fd6e45d2e11ad",
+      "size": "5128"
+    },
+    {
+      "package": "libglx0",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libglx0_1.1.0-1_arm64.deb",
+      "sha256": "3707c4a27c32defc2c2530a1d2c033c7c2c4759b6840abfbe6c28f7b6ee3cedc",
+      "size": "29024"
+    },
+    {
+      "package": "libopengl0",
+      "version": "1.1.0-1",
+      "filename": "pool/main/libg/libglvnd/libopengl0_1.1.0-1_arm64.deb",
+      "sha256": "a63149089d7d5deb750d6bead49a3a3c2af35ad22988a414c3bdf6658c8eed00",
+      "size": "34408"
+    },
+    {
+      "package": "libegl1-mesa-dev",
+      "version": "18.3.6-2+deb10u1",
+      "filename": "pool/main/m/mesa/libegl1-mesa-dev_18.3.6-2+deb10u1_arm64.deb",
+      "sha256": "3c7bb44e35ecd07fb00084004e32e5f57d30afcca16087051be03bde65405bba",
+      "size": "61708"
+    },
+    {
+      "package": "libgles2-mesa-dev",
+      "version": "18.3.6-2+deb10u1",
+      "filename": "pool/main/m/mesa/libgles2-mesa-dev_18.3.6-2+deb10u1_arm64.deb",
+      "sha256": "5f33b8e15718ef967431667b11bfc26006e706d9a622434453ec078846d46d5e",
+      "size": "85456"
+    },
+    {
+      "package": "libx11-dev",
+      "version": "2:1.6.7-1+deb10u2",
+      "filename": "pool/main/libx/libx11/libx11-dev_1.6.7-1+deb10u2_arm64.deb",
+      "sha256": "782349188d71cf9da1742e4dbc923d31806e0a62bd501de14a441b94d0048f74",
+      "size": "816288"
+    },
+    {
+      "package": "mesa-common-dev",
+      "version": "18.3.6-2+deb10u1",
+      "filename": "pool/main/m/mesa/mesa-common-dev_18.3.6-2+deb10u1_arm64.deb",
+      "sha256": "8904ad81e0441a61a7a87ac0828c920cd171a6ef4538b392f0ea0175950f1184",
+      "size": "610908"
+    },
+    {
+      "package": "x11proto-dev",
+      "version": "2018.4-4",
+      "filename": "pool/main/x/xorgproto/x11proto-dev_2018.4-4_all.deb",
+      "sha256": "aa0237467fcb5ccabf6a93fc19fae4d76d8c6dfbf9e449edda5f6393e50d8674",
+      "size": "250832"
+    }
+  ]
+}

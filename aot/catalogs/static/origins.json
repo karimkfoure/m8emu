@@ -1,0 +1,153 @@
+{
+  "schema": "m8-static-coverage-origins/1",
+  "firmware_sha256": "20498b7637cee17baae249372db3b8377afd4e12a5e7062754c2ddd83621367f",
+  "private_sources": [
+    {
+      "path": "benchmark/native-coverage-pcs/cold-app-session.pcs.txt",
+      "sha256": "0b9247de56c318c3880f155f2a8966d1c197a5b6646fdfbbbf58e9295a3eca5a",
+      "pcs": 10355
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/postboot-union-before-missing.txt",
+      "sha256": "85425cf31ab166f5ab7ea847c4b0c93d4c3ca002c33cb61d9d285a55ab596bcc",
+      "pcs": 26363
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-boot-before-missing.txt",
+      "sha256": "76174cd2b89d3cac1902a7bc50ce274abf308f17f635ab9d322fa42bc0b91634",
+      "pcs": 22860
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-instrument-edit-before-missing.txt",
+      "sha256": "e45f946bf632783a23ec8b154e902e4e1ceab8a6da512125e21cbbbe2d39a981",
+      "pcs": 5629
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-keyjazz-before-missing.txt",
+      "sha256": "792f9aa2b8ba9f78845ddad2919675862da94ea406f1501646a07892a6be05c7",
+      "pcs": 5206
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-load-before-missing.txt",
+      "sha256": "b82fcca218e1fc0ef2baeb0ffc18143b5fd958bb7f8961a2b69e555b0bd3debb",
+      "pcs": 7919
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-phrase-edit-before-missing.txt",
+      "sha256": "0741428f51022122c491ac3e1c26c9ac53aa1f698c1403a8f1284210ce224a5f",
+      "pcs": 5503
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-save-before-missing.txt",
+      "sha256": "074987daf4a6c9bfe95181f072f46f57ef0fab69b6127eea016c07827c3f2844",
+      "pcs": 7237
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-song-transport-before-missing.txt",
+      "sha256": "5343b2bbee68e2ebe9d15bc4d1f50db2c06af18702b1434c48a371004b84167a",
+      "pcs": 3803
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-table-edit-before-missing.txt",
+      "sha256": "cdbf59defa9e93d897bad580d9254175145fb3a47a4f3672be45e9f39d042ed7",
+      "pcs": 6285
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-tempo-edit-before-missing.txt",
+      "sha256": "9f82552222c185ce33f2f2094ca7c555b5eb14e9212d8f3d53d18bfa1b045e25",
+      "pcs": 3071
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-core-final-ui-navigation-before-missing.txt",
+      "sha256": "ad2447734495b398525e70c6fc8d03b00ca2d73f41fc83c30dc8e7ec3c173b89",
+      "pcs": 9588
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-in-final-boot-before-missing.txt",
+      "sha256": "8c18ed1c172da5c244e61162ebfd22d98e9eddb12c15fdcecfeed42873c47c8e",
+      "pcs": 23738
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-in-final-midi-in-before-missing.txt",
+      "sha256": "ffb8f0eb32135ac4cc8d5b9f68d0f6e2b9941fc97daa252db04837f5bc2ee6ee",
+      "pcs": 2922
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-in-final-midi-in-setup-before-missing.txt",
+      "sha256": "e384d5650fd1e524fe5b6ef3978d71c537f1ca820beb49ccb695f2ceac94dfc9",
+      "pcs": 6944
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-in-final-midi-setup-before-missing.txt",
+      "sha256": "a5ff3f4cdbbf62a021457af1f7c95a6c88b79b5e8eac29c48f45d3546273ce55",
+      "pcs": 8129
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-out-final-boot-before-missing.txt",
+      "sha256": "444b16e52bb9124d23698c62d1e57e88f1df45d1ec910f71f87bb80d3bf29b9b",
+      "pcs": 23650
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-out-final-midi-out-before-missing.txt",
+      "sha256": "60aa2e6f15c3cfedc527e1f9cd8b8034e6e23e88c8dd58c41d6f8321845e089f",
+      "pcs": 3399
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-out-final-midi-out-setup-before-missing.txt",
+      "sha256": "b47c2f2606901591caf9608339c438b80308251c57537e2941dc98efbb788f13",
+      "pcs": 6768
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-midi-out-final-midi-setup-before-missing.txt",
+      "sha256": "d90dde0fc803072752e0c202c67a66a6917e90d84881102f8c8e71e7e4868620",
+      "pcs": 8249
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-sample-final-boot-before-missing.txt",
+      "sha256": "341a6aa09911683d57997da947506bfd51643a82ecc1036c8102ba3b578a020e",
+      "pcs": 22849
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-sample-final-load-before-missing.txt",
+      "sha256": "6dec3500556e68f82f352f3488fb5bccdfb7f7f63c3145a11ab261e7a231d8fe",
+      "pcs": 7695
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/reference-sample-final-sample-browser-load-before-missing.txt",
+      "sha256": "4efe5b12821305a14226b398e8854889bdecb4d57ad5125757c7cd528e74d809",
+      "pcs": 8396
+    },
+    {
+      "path": "benchmark/native-coverage-pcs/union-before-missing.txt",
+      "sha256": "222d3285b8566e87e4815423aa39063b6fa6e750ba5071e7d552b833d31e871a",
+      "pcs": 43584
+    },
+    {
+      "path": "benchmark/profiles/native-coverage/reference-core/boot-pc.json.gz",
+      "sha256": "1c5b05fb743fe5c1f9c33e706ddc97f1638e723978b657e7bdbbda588e678531"
+    },
+    {
+      "path": "benchmark/profiles/native-coverage/reference-midi-in/boot-pc.json.gz",
+      "sha256": "b23103dedbc00cc063b715c8fa5272e4ba80af4f84ad76d961e596d807f22238"
+    },
+    {
+      "path": "benchmark/profiles/native-coverage/reference-midi-out/boot-pc.json.gz",
+      "sha256": "d53018da5feb704cd3d6acea85684ff3c3957bc57dabcade5688b3cebb65ad68"
+    },
+    {
+      "path": "benchmark/profiles/native-coverage/reference-sample/boot-pc.json.gz",
+      "sha256": "aec58f4eb6dbc8d5db57bffc629a1b137b4c137f2e6ee0cc8b84be92a521c2e2"
+    },
+    {
+      "path": "benchmark/profiles/native-coverage/postboot-handlers-manifest.json.gz",
+      "sha256": "960153dda3fcd4e93ebc20b745b31ecf10e2896dfd5371eed90470009993e8bc",
+      "pcs": 493
+    }
+  ],
+  "public_observed_pcs": 74828,
+  "additional_retained_pcs": 1271,
+  "boot_pcs": 34637,
+  "boot_weight": 507959840,
+  "retained_union_pcs": 79941,
+  "qualification": "Compact PC and ranking inputs only; original captures remain private research evidence."
+}

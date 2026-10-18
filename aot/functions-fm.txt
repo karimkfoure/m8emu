@@ -1,0 +1,8 @@
+# Original Headless 6.5.2C FM render graph. Append to functions.txt for builds.
+# Bounds are exclusive code limits, derived from reachable original instructions.
+# The hot PCs 0x12174 and 0x1232c belong to one operator function. The render
+# callback calls all four operators directly, so these entries need no new hook.
+0x00012174 0x00012f48 # evaluate an FM operator waveform and phase
+0x00013480 0x00013fd8 # update FM operator parameters and modulation
+0x00013fd8 0x000145e8 # render four FM operators and stereo output
+0x00011a08 0x00011d04 # apply an FM parameter modulator through original virtual calls
