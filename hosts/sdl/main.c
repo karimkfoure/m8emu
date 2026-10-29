@@ -3,6 +3,7 @@
 #include "session.h"
 #include "checkpoint.h"
 #include "card.h"
+#include "demo_card.h"
 #include "media.h"
 #include "bridge.h"
 #include "worker.h"
@@ -81,6 +82,17 @@ static m8rt *desktop_fresh(void *context,char *error,size_t capacity) {
 }
 static m8rt *restore_fresh(void *context) {
     restore_context *c=context;return desktop_fresh(context,c->error,c->error_capacity);
+}
+
+typedef struct {
+    m8_settings_window *settings;
+    m8_desktop_session *desktop;
+    struct app_context *app;
+} presentation_context;
+static void presentation_changed(void *context) {
+    presentation_context *p=context;
+    m8_desktop_release(p->settings->keypad,p->app);
+    m8_settings_fullscreen(p->settings,p->desktop->explorer.window);
 }
 
 typedef struct latency {
@@ -654,6 +666,7 @@ int main(int argc, char **argv) {
     m8_host_native *native = NULL;
     m8_host_native_boot *native_boot = NULL;
     struct app_context ctx = {0};
+    presentation_context presentation={&settings,&desktop,&ctx};
     latency *l = NULL;
     int rendered = 0, gamepads = 0, result = 1;
     int smoke_down = 0, smoke_up = 0, smoke_checked = 0;
@@ -691,6 +704,7 @@ int main(int argc, char **argv) {
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
         o.simulated = 1;
     }
+    SDL_SetAppMetadata("m8emu","0.4.0","com.m8emu.desktop");
     if (!SDL_Init(SDL_INIT_EVENTS)) { snprintf(error, sizeof error, "%s", SDL_GetError()); goto close; }
     char audio_hint[16];
     snprintf(audio_hint, sizeof audio_hint, "%u", o.audio_frames);
@@ -728,6 +742,9 @@ int main(int argc, char **argv) {
         }
         m8_keypad_window_open(&keypad, stats_window, o.keypad, o.keypad_theme);
         m8_settings_open(&settings,stats_window,&keypad);
+        keypad.presentation_context=&presentation;
+        keypad.presentation_changed=presentation_changed;
+        m8_settings_fullscreen(&settings,NULL);
         if (record) {
             fprintf(record, "{\"event\":\"window\",\"monotonic_ns\":%" PRIu64 "}\n", m8_monotonic_ns());
             fflush(record);
@@ -735,8 +752,17 @@ int main(int argc, char **argv) {
         if (gamepads_initialize() < 0) { snprintf(error, sizeof error, "Gamepad initialization failed"); goto close; }
         gamepads = 1;
     }
+    int created_demo=0;
     if (!o.demo && !o.image) {
-        card = m8_card_open(o.card, o.read_only, 1, error, sizeof error);
+        if(!o.import_folder&&!o.project&&!o.session_script) {
+            m8_fat_card *seed=NULL;m8_fat_error cause;
+            if(m8_desktop_demo_create(&seed,&cause)!=M8_FAT_OK) {
+                snprintf(error,sizeof error,"Cannot prepare the sample project: %.476s",cause.message);goto close;
+            }
+            size_t seed_size;const void *seed_bytes=m8_fat_image(seed,&seed_size);
+            card=m8_card_open_seeded(o.card,o.read_only,seed_bytes,seed_size,&created_demo,error,sizeof error);
+            m8_fat_close(seed);
+        } else card = m8_card_open(o.card, o.read_only, 1, error, sizeof error);
         if (!card) goto close;
         if (m8_card_protect_file(card, o.firmware)) {
             snprintf(error, sizeof error, "%s", m8_card_error(card)); goto close;
@@ -837,7 +863,7 @@ int main(int argc, char **argv) {
         .display_capacity = o.display_kib * 1024,
         .simulated = o.simulated, .demo = o.demo, .latency = o.latency,
         .smoke = o.smoke, .display = rendered, .observe_input = record != NULL,
-        .project = o.project, .session_script = o.session_script, .session_output = o.session_output,
+        .project = created_demo ? M8_DESKTOP_DEMO_PROJECT : o.project, .session_script = o.session_script, .session_output = o.session_output,
         .play = !o.no_play && !o.latency && (o.play || o.project || (o.demo && o.headless)),
         .thread_seconds = m8_thread_seconds, .process_seconds = m8_process_seconds,
         .thread_setup = configure_guest_thread ? guest_thread_setup : NULL, .thread_setup_context = &o,
@@ -895,11 +921,17 @@ int main(int argc, char **argv) {
         if(m8_desktop_session_update(&desktop,&settings,&ctx,worker,rendered))stop_requested=1;
         uint64_t now = SDL_GetTicksNS();
         if (rendered && now-last_render >= UINT64_C(1000000000)/o.fps) {
+            if(keypad.dirty)renderer_request_redraw();
             render_screen(&ctx.conf); last_render = now;
             m8_settings_update(&settings,worker,s.audio,&state);
-            if (!m8_keypad_window_draw(&keypad, m8_bridge_host_held()) || !m8_settings_draw(&settings) ||
-                !m8_explorer_draw(&desktop.explorer,keypad.theme)) {
-                snprintf(error, sizeof error, "Desktop render: %s", SDL_GetError()); goto close;
+            keypad.realtime_ratio=settings.realtime;
+            m8_settings_fullscreen(&settings,desktop.explorer.window);
+            const char *failed_surface=NULL;
+            if(!m8_keypad_window_draw(&keypad,m8_bridge_host_held()))failed_surface="main";
+            else if(!m8_settings_draw(&settings))failed_surface="settings/about";
+            else if(!m8_explorer_draw(&desktop.explorer,keypad.theme))failed_surface="explorer";
+            if(failed_surface) {
+                snprintf(error,sizeof error,"Desktop render: surface=%s error=%s",failed_surface,SDL_GetError());goto close;
             }
         }
         SDL_Delay(2);
@@ -1001,11 +1033,17 @@ int main(int argc, char **argv) {
         if (m8_process_data(&ctx.conf) == DEVICE_FATAL_ERROR) { snprintf(error, sizeof error, "Host input queue full"); goto close; }
         if (drain_display(worker, rendered)) { snprintf(error, sizeof error, "Display decode failed"); goto close; }
         if (rendered && now-last_render >= UINT64_C(1000000000)/o.fps) {
+            if(keypad.dirty)renderer_request_redraw();
             render_screen(&ctx.conf); last_render = now;
             m8_settings_update(&settings,worker,s.audio,&state);
-            if (!m8_keypad_window_draw(&keypad, m8_bridge_host_held()) || !m8_settings_draw(&settings) ||
-                !m8_explorer_draw(&desktop.explorer,keypad.theme)) {
-                snprintf(error, sizeof error, "Desktop render: %s", SDL_GetError()); goto close;
+            keypad.realtime_ratio=settings.realtime;
+            m8_settings_fullscreen(&settings,desktop.explorer.window);
+            const char *failed_surface=NULL;
+            if(!m8_keypad_window_draw(&keypad,m8_bridge_host_held()))failed_surface="main";
+            else if(!m8_settings_draw(&settings))failed_surface="settings/about";
+            else if(!m8_explorer_draw(&desktop.explorer,keypad.theme))failed_surface="explorer";
+            if(failed_surface) {
+                snprintf(error,sizeof error,"Desktop render: surface=%s error=%s",failed_surface,SDL_GetError());goto close;
             }
             renders = m8_render_present_count() - renders_base;
         }
@@ -1102,6 +1140,7 @@ int main(int argc, char **argv) {
     if (*delivery_error) snprintf(error, sizeof error, "%s", delivery_error);
     else result = 0;
 close:
+    keypad.presentation_changed=NULL;
     m8_desktop_session_close(&desktop);
     m8_settings_close(&settings);
     m8_keypad_window_close(&keypad);

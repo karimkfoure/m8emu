@@ -1,6 +1,8 @@
 #include "desktop_session.h"
 #include "desktop_events.h"
 #include "checkpoint.h"
+#include "demo_card.h"
+#include "render_platform.h"
 #include "bridge.h"
 #include "common.h"
 #include "backends/m8.h"
@@ -11,13 +13,22 @@ static void error(m8_settings_window *settings,const char *text) {
     SDL_strlcpy(settings->error,text,sizeof settings->error);settings->dirty=true;m8_settings_show(settings);
 }
 static void start(m8_desktop_session *d,m8_settings_window *settings,struct app_context *ctx,int intent) {
+    if(settings->display&&m8_render_fullscreen(settings->display))return;
     if(d->intent||d->awaiting)return;
     if(d->explorer.window) {
         if(intent==OPEN){SDL_ShowWindow(d->explorer.window);SDL_RaiseWindow(d->explorer.window);}
         else error(settings,"Close the SD card explorer before resetting the M8.");
         return;
     }
+    if(intent==OPEN&&!m8_explorer_prepare(&d->explorer,settings->display)) {
+        error(settings,*d->explorer.message?d->explorer.message:"Cannot open the SD card explorer.");return;
+    }
     m8_desktop_release(settings->keypad,ctx);d->intent=intent;d->retry_after=0;
+    d->resetting=intent==RESET;
+    settings->keypad->resetting=d->resetting;
+    settings->keypad->dirty=true;
+    settings->reset_busy=d->resetting;
+    settings->explorer_busy=intent==OPEN;settings->dirty=true;
 }
 static bool guest_event(m8_settings_window *s,const SDL_Event *e) {
     SDL_WindowID display=s->display?SDL_GetWindowID(s->display):0,pad=s->keypad&&s->keypad->window?SDL_GetWindowID(s->keypad->window):0,id=0;
@@ -35,6 +46,9 @@ static bool guest_event(m8_settings_window *s,const SDL_Event *e) {
 bool m8_desktop_session_event(m8_desktop_session *d,m8_settings_window *s,struct app_context *ctx,const SDL_Event *e) {
     if(m8_explorer_event(&d->explorer,e))return true;
     if(!s->window)return false;
+    if(e->type==SDL_EVENT_KEY_DOWN&&e->key.key==SDLK_ESCAPE&&s->display&&
+       e->key.windowID==SDL_GetWindowID(s->display)&&
+       m8_render_fullscreen(s->display))return false;
     if(e->type==SDL_EVENT_KEY_DOWN&&!e->key.repeat&&(e->key.mod&(SDL_KMOD_CTRL|SDL_KMOD_GUI))&&e->key.key==SDLK_E) {
         start(d,s,ctx,OPEN);return true;
     }
@@ -51,20 +65,20 @@ static void completed(m8_desktop_session *d,m8_settings_window *s,m8_worker_repl
     if(reply->result==M8_SESSION_BUSY){d->retry_after=SDL_GetTicksNS()+20000000;return;}
     if(reply->result!=M8_SESSION_OK) {
         const char *message=*reply->error?reply->error:"The session operation could not be completed.";
-        error(s,message);
+        error(s,message);d->resetting=false;
         if(d->intent==COMMIT&&!d->reset){m8_explorer_reopen(&d->explorer,message);d->intent=0;}
         else if(d->intent==COMMIT){m8_fat_close(d->reset_card);d->reset_card=NULL;d->intent=RESUME;d->reset=false;}
         else if(d->intent==RESUME)d->retry_after=SDL_GetTicksNS()+250000000;
-        else d->intent=0;
+        else {if(d->intent==OPEN)m8_explorer_close(&d->explorer);d->intent=0;}
         return;
     }
     if(reply->operation==M8_WORKER_PAUSE) {
         if(d->intent==OPEN) {
             m8rt_session_section sd;m8rt_session_error cause={0};
-            if(d->quit_requested)d->intent=RESUME;
+            if(d->quit_requested||d->explorer.closed)d->intent=RESUME;
             else if(m8rt_session_find(reply->media.data,reply->media.size,M8RT_SESSION_SD,&sd,&cause)||
                     !m8_explorer_open(&d->explorer,s->display,sd.data,sd.size)) {
-                error(s,*d->explorer.message?d->explorer.message:"Cannot open the SD card explorer.");d->intent=RESUME;
+                error(s,*d->explorer.message?d->explorer.message:"Cannot open the SD card explorer.");m8_explorer_close(&d->explorer);d->intent=RESUME;
             } else {
                 d->explorer.read_only=reply->read_only;
                 if(reply->read_only)SDL_strlcpy(d->explorer.message,"The SD card is read-only.",sizeof d->explorer.message);
@@ -72,7 +86,7 @@ static void completed(m8_desktop_session *d,m8_settings_window *s,m8_worker_repl
             }
         } else {
             m8_fat_error cause;
-            if(m8_fat_create(16u*1024*1024,&d->reset_card,&cause)!=M8_FAT_OK){error(s,cause.message);d->intent=RESUME;}
+            if(m8_desktop_demo_create(&d->reset_card,&cause)!=M8_FAT_OK){error(s,cause.message);d->intent=RESUME;}
             else {d->reset=true;d->intent=COMMIT;}
         }
     } else if(reply->operation==M8_WORKER_REPLACE) {
@@ -98,11 +112,16 @@ bool m8_desktop_session_update(m8_desktop_session *d,m8_settings_window *s,struc
         m8_session_result result;
         if(d->intent==OPEN||d->intent==RESET)result=m8_worker_pause(worker);
         else if(d->intent==RESUME)result=m8_worker_resume(worker);
-        else {size_t size;const void *bytes=m8_fat_image(d->reset?d->reset_card:d->explorer.card,&size);result=m8_worker_replace(worker,bytes,size,d->reset);}
+        else {size_t size;const void *bytes=m8_fat_image(d->reset?d->reset_card:d->explorer.card,&size);result=m8_worker_replace(worker,bytes,size,d->reset?M8_SESSION_RESET_DEMO:0);}
         if(result==M8_SESSION_OK)d->awaiting=true;
         else if(result==M8_SESSION_BUSY)d->retry_after=SDL_GetTicksNS()+20000000;
         else {reply=(m8_worker_reply){.result=result};completed(d,s,&reply,rendered);}
     }
+    if(!d->intent&&!d->awaiting)d->resetting=false;
+    if(s->keypad->resetting!=d->resetting){s->keypad->resetting=d->resetting;s->keypad->dirty=true;}
+    if(s->reset_busy!=d->resetting){s->reset_busy=d->resetting;s->dirty=true;}
+    bool opening=d->intent==OPEN;
+    if(s->explorer_busy!=opening){s->explorer_busy=opening;s->dirty=true;}
     return d->quit_requested&&!d->intent&&!d->awaiting&&!d->explorer.window;
 }
 void m8_desktop_session_close(m8_desktop_session *d) {

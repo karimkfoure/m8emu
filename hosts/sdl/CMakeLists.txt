@@ -141,6 +141,20 @@ endif()
 string(REGEX REPLACE "(..)" "0x\\1," m8_font_bytes "${m8_font_hex}")
 file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/embedded_text_font.h"
   CONTENT "static const unsigned char m8_embedded_text_font[] = {${m8_font_bytes}};\n" @ONLY)
+# One source project supplies both the web and native first-use cards.
+set(m8_demo_project "${M8_ROOT}/hosts/web/demo/DEMO_DRUMS.m8s")
+if(EXISTS "${m8_demo_project}")
+  file(READ "${m8_demo_project}" m8_demo_hex HEX)
+else()
+  # Source exports encode the same project bytes, as they do the desktop font.
+  set(m8_demo_project "${M8_ROOT}/hosts/demo/DEMO_DRUMS.songhex")
+  file(READ "${m8_demo_project}" m8_demo_hex)
+  string(STRIP "${m8_demo_hex}" m8_demo_hex)
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${m8_demo_project}")
+string(REGEX REPLACE "(..)" "0x\\1," m8_demo_bytes "${m8_demo_hex}")
+file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/embedded_demo_project.h"
+  CONTENT "static const unsigned char m8_embedded_demo_project[] = {${m8_demo_bytes}};\n" @ONLY)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 set(M8_TEXT_SOURCES ${COMMON}/text_ui.c ${COMMON}/text_font.c)
 set(M8_KEYPAD_SOURCES ${COMMON}/keypad.c ${COMMON}/keypad_render.c
@@ -152,7 +166,7 @@ if(M8_LAB_UNICORN)
   set(M8_NATIVE_HOST_SOURCES ${M8_ROOT}/hosts/lab/native_reference.c
       ${M8_ROOT}/hosts/lab/native_boot_reference.c)
 endif()
-add_executable(m8emu main.c metrics.c profiling.c keypad_window.c settings_window.c desktop_events.c desktop_session.c explorer_window.c
+add_executable(m8emu main.c demo_card.c metrics.c profiling.c keypad_window.c settings_window.c desktop_events.c desktop_session.c explorer_window.c
   ${COMMON}/explorer_files.c
   ${M8_TEXT_SOURCES} ${COMMON}/preferences.c ${M8_KEYPAD_SOURCES}
   ${PLATFORM}/pc-profile.c ${PLATFORM}/host-pmu.c
@@ -300,7 +314,7 @@ target_include_directories(test_bridge PRIVATE ${COMMON} ${M8C} ${M8RT})
 target_link_libraries(test_bridge PRIVATE SDL3::SDL3)
 add_test(NAME bridge_contract COMMAND test_bridge)
 add_executable(test_desktop_windows ${M8_HOST_TEST_DIR}/test_desktop_windows.c
-  settings_window.c explorer_window.c keypad_window.c ${COMMON}/explorer_files.c
+  settings_window.c explorer_window.c keypad_window.c ${COMMON}/render_platform.c ${COMMON}/explorer_files.c
   ${COMMON}/preferences.c ${M8_TEXT_SOURCES} ${M8_KEYPAD_SOURCES} ${STORAGE}/fat.c
   ${COMMON}/audio.c ${COMMON}/audio_clock_sdl.c)
 target_include_directories(test_desktop_windows PRIVATE ${COMMON} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -492,4 +506,27 @@ if(BUILD_TESTING AND NOT M8_LAB_UNICORN)
   target_include_directories(test_checkpoint PRIVATE ${COMMON} ${M8C})
   target_link_libraries(test_checkpoint PRIVATE ${M8_RUNTIME_TARGET} SDL3::SDL3 m)
   target_compile_options(test_checkpoint PRIVATE -Wall -Wextra -Werror)
+endif()
+
+if(BUILD_TESTING)
+  add_executable(test_demo_card ${M8_HOST_TEST_DIR}/test_demo_card.c demo_card.c ${STORAGE}/fat.c)
+  target_include_directories(test_demo_card PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_compile_options(test_demo_card PRIVATE $<$<NOT:$<C_COMPILER_ID:MSVC>>:-UNDEBUG>)
+  add_test(NAME desktop_demo_card COMMAND test_demo_card "${m8_demo_project}")
+endif()
+
+# AppKit sends transition-start notifications before SDL changes fullscreen flags.
+if(APPLE)
+  enable_language(OBJC)
+  add_library(m8_native_window STATIC ${COMMON}/native_window.m)
+  target_include_directories(m8_native_window PRIVATE ${COMMON})
+  target_link_libraries(m8_native_window PUBLIC SDL3::SDL3 "-framework AppKit" "-framework QuartzCore")
+  target_link_libraries(m8emu PRIVATE m8_native_window)
+  if(TARGET test_desktop_windows)
+    target_link_libraries(test_desktop_windows PRIVATE m8_native_window)
+  endif()
+  if(TARGET keypad_event_injector)
+    target_sources(keypad_event_injector PRIVATE ${M8_HOST_TEST_DIR}/cocoa_transition_probe.m)
+    target_link_libraries(keypad_event_injector PRIVATE "-framework AppKit")
+  endif()
 endif()

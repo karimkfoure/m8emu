@@ -14,7 +14,7 @@ typedef struct {
     bool *selected;
     size_t count,scroll,visible_rows;
     int dialog,pending;
-    bool warned,closed,failed,dialog_pending,dragging,dirty,read_only;
+    bool loading,warned,closed,failed,dialog_pending,dragging,dirty,read_only;
     M8KeypadTheme drawn_theme;
     unsigned token;
     char **additions;
@@ -22,6 +22,8 @@ typedef struct {
 } m8_explorer_window;
 /* Zero-initialize before the first open. The caller first obtains a checkpoint and paused immutable card copy from
  * the session owner. Open copies bytes; no operation touches the live guest. */
+/* Create the window before requesting a checkpoint so opening is visible immediately. */
+bool m8_explorer_prepare(m8_explorer_window *,SDL_Window *parent);
 bool m8_explorer_open(m8_explorer_window *,SDL_Window *parent,const void *,size_t);
 bool m8_explorer_event(m8_explorer_window *,const SDL_Event *);
 bool m8_explorer_draw(m8_explorer_window *,M8KeypadTheme);

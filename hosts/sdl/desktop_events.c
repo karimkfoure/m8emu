@@ -31,6 +31,7 @@ bool m8_desktop_event(m8_settings_window *settings,struct app_context *ctx,const
     }
     if(m8_keypad_window_event(pad,event)) {
         if(pad->settings_requested){pad->settings_requested=false;m8_desktop_release(pad,ctx);m8_settings_show(settings);}
+        if(pad->about_requested){pad->about_requested=false;m8_desktop_release(pad,ctx);m8_about_show(settings);}
         return true;
     }
     return false;

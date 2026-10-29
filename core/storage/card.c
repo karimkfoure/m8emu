@@ -116,6 +116,31 @@ failed:
     m8_card_close(card);
     return NULL;
 }
+typedef struct { const unsigned char *bytes; size_t size; int read; } seed_image;
+static int seed_read(void *context,size_t offset,unsigned char *out,size_t n) {
+    seed_image *seed=context;
+    if(offset>seed->size||n>seed->size-offset)return -1;
+    memcpy(out,seed->bytes+offset,n);seed->read=1;return 0;
+}
+m8_card *m8_card_open_seeded(const char *path,int read_only,const void *bytes,size_t size,
+                           int *created,char *error,size_t error_capacity) {
+    if(created)*created=0;
+    if(error&&error_capacity)*error=0;
+    m8_card *card=calloc(1,sizeof *card);
+    if(!card||!bytes||!size) {
+        free(card);
+        if(error&&error_capacity)snprintf(error,error_capacity,"Cannot allocate or read the initial card image");
+        return NULL;
+    }
+    seed_image seed={bytes,size,0};
+    card->files=m8_card_platform_open(path,read_only,1,size,seed_read,&seed,card->error,sizeof card->error);
+    if(!card->files) {
+        if(error&&error_capacity)snprintf(error,error_capacity,"%s",card->error);
+        m8_card_close(card);return NULL;
+    }
+    if(created)*created=seed.read;
+    return card;
+}
 const char *m8_card_path(const m8_card *card)
 {
     return card ? m8_card_platform_path(card->files) : NULL;

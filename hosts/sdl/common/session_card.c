@@ -47,6 +47,10 @@ m8_session_result m8_session_replace(m8_session *s,m8_card *card,m8_session_fact
     if(m8_demo_boot_paused(candidate.demo)<0) {
         snprintf(error,capacity,"Replacement boot failed: %s",m8_demo_error(candidate.demo));result=M8_SESSION_GUEST_FAILED;goto done;
     }
+    if(reset==M8_SESSION_RESET_DEMO&&m8_demo_load_project(candidate.demo,"DEMO1")<0) {
+        snprintf(error,capacity,"Sample project load failed: %s",m8_demo_error(candidate.demo));
+        result=M8_SESSION_GUEST_FAILED;goto done;
+    }
     candidate.audio=m8live_create(candidate.capacity,0);
     if(!candidate.audio){result=M8_SESSION_NOMEM;goto done;}
     candidate.delivering=1;candidate.progress=SDL_GetTicksNS();

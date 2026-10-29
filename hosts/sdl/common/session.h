@@ -10,6 +10,8 @@ typedef enum {
     M8_SESSION_OK=0,M8_SESSION_BUSY,M8_SESSION_UNSUPPORTED,M8_SESSION_INVALID,
     M8_SESSION_INCOMPATIBLE,M8_SESSION_NOMEM,M8_SESSION_GUEST_FAILED,M8_SESSION_STORAGE
 } m8_session_result;
+/* Card replacement keeps settings at 0, clears them at 1, or also loads the sample at 2. */
+enum { M8_SESSION_RESET_EMPTY=1, M8_SESSION_RESET_DEMO=2 };
 typedef enum {M8_SESSION_LIVE=0,M8_SESSION_PREFILL,M8_SESSION_PREPARE} m8_session_fill_mode;
 typedef struct m8_session {
     struct m8_checkpoint *checkpoint;

@@ -7,7 +7,7 @@ typedef struct {
     m8_explorer_window explorer;
     m8_fat_card *reset_card;
     int intent;
-    bool awaiting,reset,quit_requested;
+    bool awaiting,reset,resetting,quit_requested;
     uint64_t retry_after;
 } m8_desktop_session;
 bool m8_desktop_session_event(m8_desktop_session *,m8_settings_window *,struct app_context *,const SDL_Event *);

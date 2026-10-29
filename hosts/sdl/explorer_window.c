@@ -79,10 +79,9 @@ void m8_explorer_request_close(m8_explorer_window *e) {
     if(e->dialog_pending)return;
     e->closed=true;e->dialog=0;SDL_StopTextInput(e->window);SDL_HideWindow(e->window);
 }
-bool m8_explorer_open(m8_explorer_window *e,SDL_Window *parent,const void *bytes,size_t size) {
+bool m8_explorer_prepare(m8_explorer_window *e,SDL_Window *parent) {
     if(e->window){SDL_ShowWindow(e->window);SDL_RaiseWindow(e->window);return true;}
-    memset(e,0,sizeof *e);m8_fat_error error;
-    if(m8_fat_open(bytes,size,&e->card,&error)!=M8_FAT_OK){SDL_strlcpy(e->message,error.message,sizeof e->message);return false;}
+    memset(e,0,sizeof *e);
     if(!dialog_event)dialog_event=SDL_RegisterEvents(1);
     e->token=++next_token;
     float scale=parent?m8_ui_point_scale(parent):1;
@@ -91,7 +90,17 @@ bool m8_explorer_open(m8_explorer_window *e,SDL_Window *parent,const void *bytes
     if(!e->window||!e->renderer){SDL_strlcpy(e->message,SDL_GetError(),sizeof e->message);m8_explorer_close(e);return false;}
     SDL_SetWindowMinimumSize(e->window,(int)(560*scale),(int)(420*scale));SDL_SetRenderVSync(e->renderer,0);
     if(parent){int x,y;SDL_GetWindowPosition(parent,&x,&y);SDL_SetWindowPosition(e->window,x+32,y+32);}
-    refresh(e);SDL_RaiseWindow(e->window);return true;
+    e->loading=true;e->dirty=true;
+    SDL_RaiseWindow(e->window);return true;
+}
+bool m8_explorer_open(m8_explorer_window *e,SDL_Window *parent,const void *bytes,size_t size) {
+    if(e->card){SDL_ShowWindow(e->window);SDL_RaiseWindow(e->window);return true;}
+    if(!m8_explorer_prepare(e,parent))return false;
+    m8_fat_error error;
+    if(m8_fat_open(bytes,size,&e->card,&error)!=M8_FAT_OK) {
+        SDL_strlcpy(e->message,error.message,sizeof e->message);m8_explorer_close(e);return false;
+    }
+    e->loading=false;refresh(e);return true;
 }
 static void mutate(m8_explorer_window *e,int pending) {
     e->dialog=0;e->pending=0;e->message[0]=0;
@@ -212,6 +221,14 @@ bool m8_explorer_event(m8_explorer_window *e,const SDL_Event *event) {
     if(event->type>=SDL_EVENT_WINDOW_FIRST&&event->type<=SDL_EVENT_WINDOW_LAST&&event->window.windowID==id) {
         if(event->type==SDL_EVENT_WINDOW_CLOSE_REQUESTED)m8_explorer_request_close(e);
         return true;
+    }
+    if(e->loading) {
+        if(event->type==SDL_EVENT_KEY_DOWN&&event->key.windowID==id&&event->key.key==SDLK_ESCAPE)
+            m8_explorer_request_close(e);
+        return (event->type==SDL_EVENT_KEY_DOWN||event->type==SDL_EVENT_KEY_UP)?event->key.windowID==id:
+               (event->type==SDL_EVENT_MOUSE_BUTTON_DOWN||event->type==SDL_EVENT_MOUSE_BUTTON_UP)?event->button.windowID==id:
+               event->type==SDL_EVENT_MOUSE_MOTION?event->motion.windowID==id:
+               (event->type>=SDL_EVENT_DROP_BEGIN&&event->type<=SDL_EVENT_DROP_POSITION)?event->drop.windowID==id:false;
     }
     if((event->type==SDL_EVENT_DROP_BEGIN||event->type==SDL_EVENT_DROP_POSITION)&&event->drop.windowID==id) {
         e->dragging=!e->read_only&&!e->dialog&&!e->dialog_pending;return true;
@@ -335,15 +352,26 @@ static void confirmation(m8_explorer_window *e) {
     else m8_ui_danger_button(u,ACCEPT,x+width-21-m8_ui_measure(u,accept)-22,buttons,accept,true);
 }
 bool m8_explorer_draw(m8_explorer_window *e,M8KeypadTheme theme) {
-    if(!e->renderer||e->closed)return true;
-    if(!e->dirty&&e->drawn_theme==theme)return true;
+    if(!e->renderer||e->closed||(SDL_GetWindowFlags(e->window)&SDL_WINDOW_HIDDEN))return true;
+    if(!e->loading&&!e->dirty&&e->drawn_theme==theme)return true;
     e->dirty=false;e->drawn_theme=theme;
     m8_text_ui *u=&e->ui;if(!m8_ui_begin(u,e->renderer,theme))return false;
     u->focus_offset=2;u->colors.muted=m8_ui_mix(u->colors.foreground,u->colors.page,.55f);
-    m8_ui_box(u,(SDL_FRect){0,0,u->width,u->height},u->colors.foreground);
+    if(e->loading) {
+        const char *label="Opening SD card…";
+        float cx=u->width/2,cy=u->height/2-24;
+        unsigned phase=(unsigned)(SDL_GetTicks()/80)%12;
+        for(unsigned i=0;i<12;i++) {
+            float angle=(float)i*6.2831853f/12;
+            SDL_Color color=m8_ui_mix(u->colors.foreground,u->colors.page,1.0f-(float)((i+12-phase)%12)/14);
+            m8_ui_fill(u,(SDL_FRect){cx+10*cosf(angle)-1.5f,cy+10*sinf(angle)-1.5f,3,3},color);
+        }
+        m8_ui_text(u,(u->width-m8_ui_measure(u,label))/2,cy+24,label,u->colors.muted);
+        return SDL_RenderPresent(e->renderer);
+    }
     float x=21,y=15;
     if(*e->path)m8_ui_link(u,ROOT,x,y,"SD card",false,true);
-    else m8_ui_text(u,x,y,"SD card",u->colors.foreground);
+
     x+=m8_ui_measure(u,"SD card");
     char path[4096];SDL_strlcpy(path,e->path,sizeof path);int part=ROOT+1;
     for(char *p=path;*p;) {
@@ -358,7 +386,7 @@ bool m8_explorer_draw(m8_explorer_window *e,M8KeypadTheme theme) {
     if(count){SDL_snprintf(download,sizeof download,"download (%zu)",count);SDL_snprintf(remove,sizeof remove,"delete (%zu)",count);}
     else {SDL_strlcpy(download,"download",sizeof download);SDL_strlcpy(remove,"delete",sizeof remove);}
     const char *labels[]={"add files","new folder",download,remove};const int ids[]={ADD,FOLDER,DOWNLOAD,DELETE};
-    x=21;y=47.4f;
+    x=21;y=*e->path?47.4f:15;
     for(unsigned i=0;i<4;i++) {
         float width=m8_ui_measure(u,labels[i])+22;
         if(x+width>u->width-21&&x>21){x=21;y+=36.4f;}
@@ -429,7 +457,6 @@ bool m8_explorer_draw(m8_explorer_window *e,M8KeypadTheme theme) {
     if(*e->message)m8_ui_wrap(u,21,bottom,u->width-42,e->message,u->colors.danger);
     m8_ui_line(u,1,footer-1,u->width-1,u->colors.line);
     m8_ui_button(u,IMAGE,21,footer+10,"> download SD card <",false,!e->dialog_pending);
-    m8_ui_button(u,CLOSE,u->width-21-m8_ui_measure(u,"> close <"),footer+10,"> close <",false,!e->dialog_pending);
     if(e->dialog==WARNING||e->dialog==DELETE_CONFIRM)confirmation(e);
     return SDL_RenderPresent(e->renderer);
 }

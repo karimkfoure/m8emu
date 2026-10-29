@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(m8emu VERSION 0.3.0 LANGUAGES C)
+project(m8emu VERSION 0.4.0 LANGUAGES C)
 include(cmake/M8QualifiedProfile.cmake)
 include(cmake/M8RetiredOptions.cmake)
 include(cmake/M8Firmware.cmake)

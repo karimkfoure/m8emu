@@ -10,6 +10,10 @@ typedef struct m8_card m8_card;
  * FAT16 image. Each open holds an exclusive lock until close. */
 m8_card *m8_card_open(const char *path, int read_only, int create,
                       char *error, size_t error_capacity);
+/* Create from immutable seed bytes under the same exclusive lock. Existing
+ * cards are never replaced. created is set only after successful creation. */
+m8_card *m8_card_open_seeded(const char *path,int read_only,const void *bytes,size_t size,
+                           int *created,char *error,size_t error_capacity);
 const char *m8_card_path(const m8_card *card);
 int m8_card_read_only(const m8_card *card);
 const char *m8_card_error(const m8_card *card);
