@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 262" width="720" height="262" role="img" aria-label="average speed over 10 test songs: Linux x86-64 10.67x, macOS 10.03x, Chrome 3.83x, Safari 3.47x, iPhone Safari 2.78x, Pi Zero 2 W 0.73x" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">
+<title>average speed over 10 test songs: Linux x86-64 10.67x, macOS 10.03x, Chrome 3.83x, Safari 3.47x, iPhone Safari 2.78x, Pi Zero 2 W 0.73x</title>
+<rect x="0.0" y="0.0" width="720.0" height="262.0" rx="0" fill="#ffffff"/>
+<text x="16.0" y="24.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="bold">average speed over 10 test songs, × realtime</text>
+<text x="16.0" y="62.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Linux x86-64</text>
+<text x="128.0" y="62.0" font-size="12" fill="#6e7781" text-anchor="start" font-weight="normal">Ryzen 9 5900X</text>
+<rect x="290.0" y="51.0" width="204.5" height="14.0" rx="1.5" fill="#0f8a74"/>
+<text x="502.5" y="62.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="bold">10.67×</text>
+<text x="704.0" y="62.0" font-size="12" fill="#6e7781" text-anchor="end" font-weight="normal">10 of 10 keep up</text>
+<text x="16.0" y="92.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">macOS</text>
+<text x="128.0" y="92.0" font-size="12" fill="#6e7781" text-anchor="start" font-weight="normal">M1 Pro</text>
+<rect x="290.0" y="81.0" width="192.2" height="14.0" rx="1.5" fill="#0f8a74"/>
+<text x="490.2" y="92.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="bold">10.03×</text>
+<text x="704.0" y="92.0" font-size="12" fill="#6e7781" text-anchor="end" font-weight="normal">10 of 10 keep up</text>
+<text x="16.0" y="122.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Chrome</text>
+<text x="128.0" y="122.0" font-size="12" fill="#6e7781" text-anchor="start" font-weight="normal">M1 Pro</text>
+<rect x="290.0" y="111.0" width="73.4" height="14.0" rx="1.5" fill="#0f8a74"/>
+<text x="371.4" y="122.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="bold">3.83×</text>
+<text x="704.0" y="122.0" font-size="12" fill="#6e7781" text-anchor="end" font-weight="normal">10 of 10 keep up</text>
+<text x="16.0" y="152.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Safari</text>
+<text x="128.0" y="152.0" font-size="12" fill="#6e7781" text-anchor="start" font-weight="normal">M1 Pro</text>
+<rect x="290.0" y="141.0" width="66.5" height="14.0" rx="1.5" fill="#0f8a74"/>
+<text x="364.5" y="152.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="bold">3.47×</text>
+<text x="704.0" y="152.0" font-size="12" fill="#6e7781" text-anchor="end" font-weight="normal">10 of 10 keep up</text>
+<text x="16.0" y="182.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Safari</text>
+<text x="128.0" y="182.0" font-size="12" fill="#6e7781" text-anchor="start" font-weight="normal">iPhone 15 Pro</text>
+<rect x="290.0" y="171.0" width="53.3" height="14.0" rx="1.5" fill="#0f8a74"/>
+<text x="351.3" y="182.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="bold">2.78×</text>
+<text x="704.0" y="182.0" font-size="12" fill="#6e7781" text-anchor="end" font-weight="normal">10 of 10 keep up</text>
+<text x="16.0" y="212.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Linux arm64</text>
+<text x="128.0" y="212.0" font-size="12" fill="#6e7781" text-anchor="start" font-weight="normal">Pi Zero 2 W</text>
+<rect x="290.0" y="201.0" width="14.0" height="14.0" rx="1.5" fill="#8c959f"/>
+<text x="312.0" y="212.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="bold">0.73×</text>
+<text x="704.0" y="212.0" font-size="12" fill="#6e7781" text-anchor="end" font-weight="normal">2 of 10 keep up</text>
+<line x1="309.2" y1="44.0" x2="309.2" y2="220.0" stroke="#6e7781" stroke-width="1"/>
+<text x="309.2" y="238.0" font-size="11" fill="#6e7781" text-anchor="middle" font-weight="normal">1× = realtime</text>
+</svg>
