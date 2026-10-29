@@ -16,6 +16,8 @@ it was built over the course of 6 weeks as a personal exploration of microcontro
 
 ## achieved performance
 
+these are private repo benchmarks, the code published here excludes most optimizations
+
 (realtime cpu usage multiplier, >1x means smooth playback)
 
 | sample project<br>(lightest to heaviest)| Linux x86_64<br>Ryzen 9 5900X | macOS<br>M1 Pro | Linux arm64<br>Pi Zero 2 W | Chrome<br>M1 Pro | Safari<br>M1 Pro | Safari<br>iPhone 15 Pro |
